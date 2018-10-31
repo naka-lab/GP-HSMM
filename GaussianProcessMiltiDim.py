@@ -26,8 +26,10 @@ class GPMD:
 
     def calc_lik(self, x, y ):
         lik = 0.0
-        y = np.array(y, dtype=np.float).reshape( (-1,self.__dim) )
-        x = np.array(x,dtype=np.float)
+
+        if self.__dim==1:
+            y = np.asarray(y, dtype=np.float).reshape( (-1,self.__dim) )
+        #x = np.asarray(x,dtype=np.float)
         for d in range(self.__dim):
             lik += self.__gp[d].calc_lik( x , y[:,d] )
 

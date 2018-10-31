@@ -31,6 +31,8 @@ class GPSegmentation():
         self.trans_prob_eos = np.ones( nclass )
         self.is_initialized = False
 
+        self.prior_table = [self.AVE_LEN**i * math.exp(-self.AVE_LEN) / math.factorial(i) for i in range(self.MAX_LEN)]
+
     def load_data(self, filenames, classfile=None ):
         self.data = []
         self.segments = []
@@ -93,11 +95,10 @@ class GPSegmentation():
     def calc_emission_prob( self, c, segm ):
         gp = self.gps[c]
         slen = len(segm)
-        plen = 1.0
 
         if len(segm) > 2:
             plen = self.AVE_LEN**slen * math.exp(-self.AVE_LEN) / math.factorial(slen)
-            p = gp.calc_lik( range(len(segm)) , segm )
+            p = gp.calc_lik( np.arange(len(segm), dtype=np.float) , segm )
             return math.exp(p) * plen
         else:
             return 0
@@ -144,26 +145,28 @@ class GPSegmentation():
                 if t-k<0:
                     break
 
+                segm = d[t-k:t+1]
                 for c in range(self.numclass):
-                    out_prob = self.calc_emission_prob( c, d[t-k:t+1] )
+                    out_prob = self.calc_emission_prob( c, segm )
+                    foward_prob = 0.0
 
                     # 遷移確率
                     tt = t-k-1
                     if tt>=0:
-                        for kk in range(self.MAX_LEN):
-                            for cc in range(self.numclass):
-                                a[t,k,c] += a[tt,kk,cc] * self.trans_prob[cc, c]
-                        a[t,k,c] *= out_prob
+                        #for kk in range(self.MAX_LEN):
+                        #    for cc in range(self.numclass):
+                        #        foward_prob += a[tt,kk,cc] * self.trans_prob[cc, c]
+                        foward_prob = np.sum( a[tt,:,:] * self.trans_prob[:,c] ) * out_prob
                     else:
                         # 最初の単語
-                        a[t,k,c] = out_prob * self.trans_prob_bos[c]
-
+                        foward_prob = out_prob * self.trans_prob_bos[c]
 
                     if t==T-1:
                         # 最後の単語
-                        a[t,k,c] *= self.trans_prob_eos[c]
+                        foward_prob *= self.trans_prob_eos[c]
 
-                    if math.isnan(a[t,k,c]):
+                    a[t,k,c] = foward_prob
+                    if math.isnan(foward_prob):
                         print( "a[t=%d,k=%d,c=%d] became NAN!!" % (t,k,c) )
                         sys.exit(-1)
         return a
@@ -316,7 +319,7 @@ class GPSegmentation():
             for s in segm:
                 c = self.segmclass[id(s)]
                 #lik += self.gps[c].calc_lik( np.arange(len(s),dtype=np.float) , np.array(s) )
-                lik += self.gps[c].calc_lik( range(len(s)) , s )
+                lik += self.gps[c].calc_lik( np.arange(len(s), dtype=np.float) , s )
 
         return lik
 

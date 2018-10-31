@@ -27,7 +27,8 @@ cdef class GP:
         return theta0 * exp(-0.5 * theta1 * (xi - xj) * (xi - xj)) + theta2 + theta3 * xi * xj
 
     cdef double normpdf(self, double x, double mu, double sigma):
-        return 1./(sqrt(2*np.pi)*sigma)*exp(-0.5 * (1./sigma*(x - mu))**2)
+        return 1./(sqrt(2*np.pi)*sigma)*exp(-0.5 * ((x - mu)/sigma)**2)
+
 
     def __init__( self ):
         self.beta = 10.0
