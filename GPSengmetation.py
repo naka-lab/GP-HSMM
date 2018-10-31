@@ -1,5 +1,6 @@
 # encoding: utf8
 from __future__ import unicode_literals
+from __future__ import print_function
 import GaussianProcessMiltiDim
 import random
 import math
@@ -104,13 +105,13 @@ class GPSegmentation():
     def save_model(self, basename ):
         if not os.path.exists(basename):
             os.mkdir( basename )
-        
+
         for n,segm in enumerate(self.segments):
             classes = []
             for s in segm:
                 c = self.segmclass[id(s)]
                 classes += [ c for i in range(len(s)) ]
-            np.savetxt( basename+"segm%03d.txt" % n, classes, fmt="%d" )
+            np.savetxt( basename+"segm%03d.txt" % n, classes, fmt=str("%d") )
 
 
         # 各クラスに分類されたデータを保存

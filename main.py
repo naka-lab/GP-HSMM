@@ -35,7 +35,7 @@ def recog( modeldir, savedir ):
 
 
 def main():
-    #learn( "learn/" )
+    learn( "learn/" )
     recog( "learn/" , "recog/" )
     return
 

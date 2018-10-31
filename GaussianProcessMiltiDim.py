@@ -1,4 +1,6 @@
 # encoding: utf8
+from __future__ import unicode_literals
+from __future__ import print_function
 import pyximport
 import numpy as np
 pyximport.install(setup_args={'include_dirs':[np.get_include()]}, inplace=True)
@@ -28,17 +30,17 @@ class GPMD:
         x = np.array(x,dtype=np.float)
         for d in range(self.__dim):
             lik += self.__gp[d].calc_lik( x , y[:,d] )
-            
+
         return lik
 
     def plot(self, x ):
         for d in range(self.__dim):
             plt.subplot( self.__dim, 1, d+1 )
-            
+
             mus, sigmas = self.__gp[d].predict(x)
             y_min = mus - sigmas*2
             y_max = mus + sigmas*2
-            
+
             plt.fill_between( x, y_min, y_max, facecolor="lavender" , alpha=0.9 , edgecolor="lavender"  )
             plt.plot(x, y_min, 'b--')
             plt.plot(x, mus, 'b-')
@@ -46,7 +48,7 @@ class GPMD:
 
 
 def main():
-    pass  
+    pass
 
 if __name__ == '__main__':
     main()
