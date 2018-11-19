@@ -9,6 +9,7 @@ import time
 import numpy as np
 import sys
 import os
+from forwad_backward import forward_backward_mp, forward_backward_single
 
 
 class GPSegmentation():
@@ -18,7 +19,7 @@ class GPSegmentation():
     AVE_LEN = 10
     SKIP_LEN = 1
 
-    def __init__(self, dim, nclass):
+    def __init__(self, dim, nclass, num_threads):
         self.dim = dim
         self.numclass = nclass
         self.segmlen = 3
@@ -30,6 +31,9 @@ class GPSegmentation():
         self.trans_prob_bos = np.ones( nclass )
         self.trans_prob_eos = np.ones( nclass )
         self.is_initialized = False
+
+        self.num_threads = num_threads
+        #self.pool = Pool( num_threads )
 
         self.prior_table = [self.AVE_LEN**i * math.exp(-self.AVE_LEN) / math.factorial(i) for i in range(self.MAX_LEN)]
 
@@ -257,18 +261,21 @@ class GPSegmentation():
         self.update(False)
 
     def update(self, learning_phase=True ):
+        N = len(self.segments)
 
-        for i in range(len(self.segments)):
-            d = self.data[i]
-            segm = self.segments[i]
+        for start in range(0, N, self.num_threads):
+            end = min( N, start+self.num_threads )
 
-            for s in segm:
-                c = self.segmclass[id(s)]
-                self.segmclass.pop( id(s) )
+            for i in range(start, end):
+                segm = self.segments[i]
 
-                if learning_phase:
-                    # パラメータ更新
-                    self.remove_ndarray( self.segm_in_class[c], s )
+                for s in segm:
+                    c = self.segmclass[id(s)]
+                    self.segmclass.pop( id(s) )
+
+                    if learning_phase:
+                        # パラメータ更新
+                        self.remove_ndarray( self.segm_in_class[c], s )
 
             if learning_phase:
                 # GP更新
@@ -278,28 +285,26 @@ class GPSegmentation():
                 # 遷移確率更新
                 self.calc_trans_prob()
 
-            start = time.clock()
-            print( "forward...", end="")
-            a = self.forward_filtering( d )
-
-            print( "backward...", end="" )
-            segm, segm_class = self.backward_sampling( a, d )
-            print( time.clock()-start, "sec" )
+            if self.num_threads==1:
+                segm, segm_class = forward_backward_single( self, self.data[start] )
+                #segm, segm_class = forward_backward_mp( self, self.data[start:end], self.num_threads )
+            else:
+                segm, segm_class = forward_backward_mp( self, self.data[start:end], self.num_threads )
 
             print( "Number of classified segments: [", end="")
             for s in self.segm_in_class:
                 print( len(s), end=" " )
             print( "]" )
 
+            for j, i in enumerate(range(start, end)):
+                self.segments[i] = segm[j]
 
-            self.segments[i] = segm
+                for s,c in zip( segm[j], segm_class[j] ):
+                    self.segmclass[id(s)] = c
 
-            for s,c in zip( segm, segm_class ):
-                self.segmclass[id(s)] = c
-
-                # パラメータ更新
-                if learning_phase:
-                    self.segm_in_class[c].append(s)
+                    # パラメータ更新
+                    if learning_phase:
+                        self.segm_in_class[c].append(s)
 
             if learning_phase:
                 # GP更新

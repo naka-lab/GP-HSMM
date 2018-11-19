@@ -10,6 +10,26 @@ cdef extern from "math.h":
     double sqrt(double)
     double log(double)
 
+def rebuild_GP(beta, ns, xt, yt, i_cov, param, param_cache ):
+    gp = GP()
+    gp.beta = beta
+    gp.ns = ns
+    gp.xt = xt
+    gp.yt = yt
+    gp.i_cov = i_cov
+    gp.param = param
+    gp.param_cache = param_cache
+    return gp
+
+def rebuild(beta, ns, xt, yt, i_cov, param_cache):
+    gp = GP()
+    gp.beta = beta
+    gp.ns = ns
+    gp.xt = xt
+    gp.yt = yt
+    gp.i_cov = i_cov
+    return GP()
+
 
 cdef class GP:
     cdef double beta
@@ -30,7 +50,7 @@ cdef class GP:
         return 1./(sqrt(2*np.pi)*sigma)*exp(-0.5 * ((x - mu)/sigma)**2)
 
 
-    def __init__( self ):
+    def __cinit__( self ):
         self.beta = 10.0
         self.param_cache = {}
 
@@ -103,6 +123,10 @@ cdef class GP:
             lik += log( p )
 
         return lik
+
+    def __reduce__(self):
+        return ( rebuild_GP, (self.beta, self.ns, self.xt, self.yt, np.array(self.i_cov), np.array(self.param), self.param_cache) )
+        #return ( rebuild, (self.beta, self.ns, self.xt, self.yt, np.array(self.i_cov), self.param_cache) )
 
 
 

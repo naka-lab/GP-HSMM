@@ -3,7 +3,7 @@ from GPSengmetation import GPSegmentation
 import time
 
 def learn( savedir ):
-    gpsegm = GPSegmentation(2,5)
+    gpsegm = GPSegmentation(2,5,2)
 
     files =  [ "testdata2d_%03d.txt" % j for j in range(4) ]
     gpsegm.load_data( files )
@@ -13,12 +13,13 @@ def learn( savedir ):
         print( "-----", it, "-----" )
         gpsegm.learn()
         gpsegm.save_model( savedir )
+        print( "lik =", gpsegm.calc_lik() )
     print( time.clock()-start )
     return gpsegm.calc_lik()
 
 
 def recog( modeldir, savedir ):
-    gpsegm = GPSegmentation(2,5)
+    gpsegm = GPSegmentation(2,5,1)
 
     gpsegm.load_data( [ "testdata2d_%03d.txt" % j for j in range(4) ] )
     gpsegm.load_model( modeldir )
@@ -32,11 +33,10 @@ def recog( modeldir, savedir ):
     print( time.clock()-start )
     gpsegm.save_model( savedir )
 
-
-
 def main():
     learn( "learn/" )
-    recog( "learn/" , "recog/" )
+    #recog( "learn/" , "recog/" )
+
     return
 
 if __name__=="__main__":
