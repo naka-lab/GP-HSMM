@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from GPSengmetation import GPSegmentation
+from GPSegmentation import GPSegmentation
 import time
 
 def learn( savedir ):

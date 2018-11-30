@@ -1,7 +1,7 @@
 # encoding: utf8
 from __future__ import unicode_literals
 from __future__ import print_function
-import GaussianProcessMiltiDim
+import GaussianProcessMultiDim
 import random
 import math
 import matplotlib.pyplot as plt
@@ -22,7 +22,7 @@ class GPSegmentation():
         self.dim = dim
         self.numclass = nclass
         self.segmlen = 3
-        self.gps = [ GaussianProcessMiltiDim.GPMD(dim) for i in range(self.numclass) ]
+        self.gps = [ GaussianProcessMultiDim.GPMD(dim) for i in range(self.numclass) ]
         self.segm_in_class= [ [] for i in range(self.numclass) ]
         self.segmclass = {}
         self.segments = []
