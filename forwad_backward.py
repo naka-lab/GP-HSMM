@@ -1,5 +1,5 @@
 import time
-import GPSengmetation
+import GPSegmentation
 from multiprocessing import Pool
 
 
