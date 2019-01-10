@@ -109,10 +109,13 @@ class GPSegmentation():
 
         for n,segm in enumerate(self.segments):
             classes = []
+            cut_points = []
             for s in segm:
                 c = self.segmclass[id(s)]
                 classes += [ c for i in range(len(s)) ]
-            np.savetxt( basename+"segm%03d.txt" % n, classes, fmt=str("%d") )
+                cut_points += [0] * len(s)
+                cut_points[-1] = 1
+            np.savetxt( basename+"segm%03d.txt" % n, np.vstack([classes,cut_points]).T, fmt=str("%d") )
 
 
         # 各クラスに分類されたデータを保存
