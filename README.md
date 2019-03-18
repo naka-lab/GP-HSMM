@@ -27,3 +27,19 @@ majorVersion = int(s[:-2]) - 6
 
 を使いたいVisual Studioのバージョンに書き換えてください．
 VS2012の場合は，`majorVersion = 11`となります．
+
+# LICENSE
+This program is freely available for free non-commercial use. 
+If you publish results obtained using this program, please cite:
+
+```
+@article{nakamura2017segmenting,
+  title={Segmenting continuous motions with hidden semi-markov models and gaussian processes},
+  author={Nakamura, Tomoaki and Nagai, Takayuki and Mochihashi, Daichi and Kobayashi, Ichiro and Asoh, Hideki and Kaneko, Masahide},
+  journal={Frontiers in neurorobotics},
+  volume={11},
+  pages={67},
+  year={2017},
+  publisher={Frontiers}
+}
+```
