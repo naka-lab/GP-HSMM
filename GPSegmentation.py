@@ -141,7 +141,8 @@ class GPSegmentation():
 
     def forward_filtering(self, d ):
         T = len(d)
-        a = np.zeros( (len(d), self.MAX_LEN, self.numclass) )                            # 前向き確率
+        a = np.zeros( (len(d), self.MAX_LEN, self.numclass) )   # 前向き確率
+        z = np.ones( len(d)+self.MAX_LEN ) # 正規化定数
 
         for t in range(T):
             for k in range(self.MIN_LEN,self.MAX_LEN,self.SKIP_LEN):
@@ -172,6 +173,11 @@ class GPSegmentation():
                     if math.isnan(foward_prob):
                         print( "a[t=%d,k=%d,c=%d] became NAN!!" % (t,k,c) )
                         sys.exit(-1)
+            # 正規化
+            if t-self.MIN_LEN>=0:
+                z[t] = np.sum( a[t,:,:] )
+                a[t,:,:] *=  (z[t:t+self.MAX_LEN] / z[t]).reshape(-1,1)
+                 
         return a
 
     def sample_idx(self, prob ):
