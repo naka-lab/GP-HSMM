@@ -175,8 +175,8 @@ class GPSegmentation():
                         sys.exit(-1)
             # 正規化
             if t-self.MIN_LEN>=0:
-                z[t] = np.sum( a[t,:,:] )
-                a[t,:,:] *=  (z[t:t+self.MAX_LEN] / z[t]).reshape(-1,1)
+                z[t+self.MAX_LEN] = np.sum( a[t,:,:] )
+                a[t,:,:] *=  (z[t+self.MAX_LEN:t:-1] / z[t+self.MAX_LEN]).reshape(-1,1)
                  
         return a
 
