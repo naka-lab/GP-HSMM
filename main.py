@@ -15,6 +15,7 @@ def learn( savedir ):
         print( "-----", it, "-----" )
         gpsegm.learn()
         gpsegm.save_model( savedir )
+        print( "lik =", gpsegm.calc_lik() )
     print( time.clock()-start )
     return gpsegm.calc_lik()
 
