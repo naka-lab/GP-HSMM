@@ -9,6 +9,7 @@ import time
 import numpy as np
 import sys
 import os
+from scipy.misc import logsumexp
 
 
 class GPSegmentation():
@@ -92,14 +93,14 @@ class GPSegmentation():
         self.gps[c].learn( datax, datay )
 
 
-    def calc_emission_prob( self, c, segm ):
+    def calc_emission_logprob( self, c, segm ):
         gp = self.gps[c]
         slen = len(segm)
 
         if len(segm) > 2:
             plen = self.AVE_LEN**slen * math.exp(-self.AVE_LEN) / math.factorial(slen)
             p = gp.calc_lik( np.arange(len(segm), dtype=np.float) , segm )
-            return math.exp(p) * plen
+            return p + math.log(plen)
         else:
             return 0
 
@@ -141,45 +142,49 @@ class GPSegmentation():
 
     def forward_filtering(self, d ):
         T = len(d)
-        a = np.zeros( (len(d), self.MAX_LEN, self.numclass) )   # 前向き確率
+        a = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) - 1.0e-100   # 前向き確率．対数で確率を保持．1.0e-100で確率0を近似的に表現．
+        valid = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) # 計算された有効な値可どうか．計算されていない場所の確率を0にするため．
         z = np.ones( T ) # 正規化定数
-
+        
         for t in range(T):
             for k in range(self.MIN_LEN,self.MAX_LEN,self.SKIP_LEN):
-                if t-k<0:
+                if t-k<=self.MIN_LEN:
                     break
 
                 segm = d[t-k:t+1]
                 for c in range(self.numclass):
-                    out_prob = self.calc_emission_prob( c, segm )
+                    out_prob = self.calc_emission_logprob( c, segm )
                     foward_prob = 0.0
-
+                    
                     # 遷移確率
                     tt = t-k-1
                     if tt>=0:
                         #for kk in range(self.MAX_LEN):
                         #    for cc in range(self.numclass):
                         #        foward_prob += a[tt,kk,cc] * self.trans_prob[cc, c]
-                        foward_prob = np.sum( a[tt,:,:] * self.trans_prob[:,c] ) * out_prob
+                        #foward_prob = math.log(np.sum( a[tt,:,:] * self.trans_prob[:,c] )) + out_prob
+                        foward_prob = logsumexp( a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
                     else:
                         # 最初の単語
-                        foward_prob = out_prob * self.trans_prob_bos[c]
+                        foward_prob = out_prob + math.log(self.trans_prob_bos[c])
 
                     if t==T-1:
                         # 最後の単語
-                        foward_prob *= self.trans_prob_eos[c]
+                        foward_prob += math.log(self.trans_prob_eos[c])
 
                     # 正規化を元に戻す
-                    a[t,k,c] = foward_prob * z[t-k]
+                    a[t,k,c] = foward_prob
+                    valid[t,k,c] = 1.0
                     if math.isnan(foward_prob):
                         print( "a[t=%d,k=%d,c=%d] became NAN!!" % (t,k,c) )
                         sys.exit(-1)
             # 正規化
             if t-self.MIN_LEN>=0:
-                z[t] = np.sum( a[t,:,:] )
-                a[t,:,:] /= z[t]
+                z[t] = logsumexp( a[t,:,:] )
+                a[t,:,:] -= z[t]
+                #a[t,:,:] = np.exp(a[t,:,:] - z[t])
                  
-        return a
+        return np.exp(a)*valid
 
     def sample_idx(self, prob ):
         accm_prob = [0,] * len(prob)
