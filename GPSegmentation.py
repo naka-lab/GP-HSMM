@@ -160,7 +160,7 @@ class GPSegmentation():
                         #for kk in range(self.MAX_LEN):
                         #    for cc in range(self.numclass):
                         #        foward_prob += a[tt,kk,cc] * self.trans_prob[cc, c]
-                        foward_prob = np.sum( a[tt,:,:] * self.trans_prob[:,c] ) * out_prob
+                        foward_prob = np.sum( a[tt,:,:] * self.trans_prob[:,c] ) * out_prob * z[tt]
                     else:
                         # 最初の単語
                         foward_prob = out_prob * self.trans_prob_bos[c]
@@ -170,7 +170,7 @@ class GPSegmentation():
                         foward_prob *= self.trans_prob_eos[c]
 
                     # 正規化を元に戻す
-                    a[t,k,c] = foward_prob * z[t-k]
+                    a[t,k,c] = foward_prob
                     if math.isnan(foward_prob):
                         print( "a[t=%d,k=%d,c=%d] became NAN!!" % (t,k,c) )
                         sys.exit(-1)
