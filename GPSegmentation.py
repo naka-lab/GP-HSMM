@@ -9,8 +9,13 @@ import time
 import numpy as np
 import sys
 import os
-from scipy.misc import logsumexp
+#from scipy.misc import logsumexp
+import pyximport
+pyximport.install(setup_args={'include_dirs':[np.get_include()]}, inplace=True)
+from cymath import logsumexp
 
+
+   
 
 class GPSegmentation():
     # parameters
@@ -102,7 +107,7 @@ class GPSegmentation():
             p = gp.calc_lik( np.arange(len(segm), dtype=np.float) , segm )
             return p + math.log(plen)
         else:
-            return 0
+            return 1.0e-100
 
     def save_model(self, basename ):
         if not os.path.exists(basename):
