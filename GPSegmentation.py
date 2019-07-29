@@ -103,9 +103,11 @@ class GPSegmentation():
         slen = len(segm)
 
         if len(segm) > 2:
-            plen = self.AVE_LEN**slen * math.exp(-self.AVE_LEN) / math.factorial(slen)
+            #plen = self.AVE_LEN**slen * math.exp(-self.AVE_LEN) / math.factorial(slen)
+            log_plen = (slen*math.log(self.AVE_LEN) + (-self.AVE_LEN)*math.log(math.e)) - (sum(np.log(np.arange(1,slen+1))))
             p = gp.calc_lik( np.arange(len(segm), dtype=np.float) , segm )
-            return p + math.log(plen)
+            #return p + math.log(plen)
+            return p + log_plen
         else:
             return 1.0e-100
 
