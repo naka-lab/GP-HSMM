@@ -79,13 +79,13 @@ class GPSegmentation():
         # GP読み込み
         for c in range(self.numclass):
             filename = basename + "class%03d.npy" % c
-            self.segm_in_class[c] = np.load( filename )
+            self.segm_in_class[c] = np.load( filename, allow_pickle=True)
             self.update_gp( c )
 
         # 遷移確率更新
-        self.trans_prob = np.load( basename+"trans.npy" )
-        self.trans_prob_bos = np.load( basename+"trans_bos.npy" )
-        self.trans_prob_eos = np.load( basename+"trans_eos.npy" )
+        self.trans_prob = np.load( basename+"trans.npy", allow_pickle=True )
+        self.trans_prob_bos = np.load( basename+"trans_bos.npy", allow_pickle=True )
+        self.trans_prob_eos = np.load( basename+"trans_eos.npy", allow_pickle=True )
 
 
     def update_gp(self, c ):
