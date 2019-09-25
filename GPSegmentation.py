@@ -155,7 +155,7 @@ class GPSegmentation():
         
         for t in range(T):
             for k in range(self.MIN_LEN,self.MAX_LEN,self.SKIP_LEN):
-                if t-k<=self.MIN_LEN:
+                if t-k<=0:
                     break
 
                 segm = d[t-k:t+1]
