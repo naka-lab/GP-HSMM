@@ -15,7 +15,7 @@ pyximport.install(setup_args={'include_dirs':[np.get_include()]}, inplace=True)
 from cymath import logsumexp
 
 
-   
+
 
 class GPSegmentation():
     # parameters
@@ -152,17 +152,17 @@ class GPSegmentation():
         a = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) - 1.0e-100   # 前向き確率．対数で確率を保持．1.0e-100で確率0を近似的に表現．
         valid = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) # 計算された有効な値可どうか．計算されていない場所の確率を0にするため．
         z = np.ones( T ) # 正規化定数
-        
+
         for t in range(T):
             for k in range(self.MIN_LEN,self.MAX_LEN,self.SKIP_LEN):
-                if t-k<=0:
+                if t-k<0:
                     break
 
                 segm = d[t-k:t+1]
                 for c in range(self.numclass):
                     out_prob = self.calc_emission_logprob( c, segm )
                     foward_prob = 0.0
-                    
+
                     # 遷移確率
                     tt = t-k-1
                     if tt>=0:
@@ -190,7 +190,7 @@ class GPSegmentation():
                 z[t] = logsumexp( a[t,:,:] )
                 a[t,:,:] -= z[t]
                 #a[t,:,:] = np.exp(a[t,:,:] - z[t])
-                 
+
         return np.exp(a)*valid
 
     def sample_idx(self, prob ):
@@ -344,4 +344,3 @@ class GPSegmentation():
                 lik += self.gps[c].calc_lik( np.arange(len(s), dtype=np.float) , s )
 
         return lik
-
