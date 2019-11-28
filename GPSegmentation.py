@@ -229,23 +229,34 @@ class GPSegmentation():
 
         return segm, segm_class
 
+
     def calc_trans_prob( self ):
-        self.trans_prob = np.zeros( (self.numclass,self.numclass) )
-        self.trans_prob += 0.1
-
-        # 数え上げる
-        for n,segm in enumerate(self.segments):
-            for i in range(1,len(segm)):
-                try:
-                    cc = self.segmclass[ id(segm[i-1]) ]
-                    c = self.segmclass[ id(segm[i]) ]
-                except KeyError as e:
-                    # gibss samplingで除かれているものは無視
-                    break
-                self.trans_prob[cc,c] += 1.0
-
-        # 正規化
-        self.trans_prob = self.trans_prob / self.trans_prob.sum(1).reshape(self.numclass,1)
+       self.trans_prob = np.zeros( (self.numclass,self.numclass) )
+       self.trans_prob_bos = np.zeros( self.numclass )
+       self.trans_prob_eos = np.zeros( self.numclass )
+       self.trans_prob += 0.1
+       self.trans_prob_bos += 0.1
+       self.trans_prob_eos += 0.1
+       # 数え上げ
+       for n,segm in enumerate(self.segments):
+           if id(segm[0]) in self.segmclass:
+               c_begin = self.segmclass[ id(segm[0]) ]
+               self.trans_prob_bos[c_begin]+=1
+           if id(segm[-1]) in self.segmclass:
+               c_end = self.segmclass[ id(segm[-1]) ]
+               self.trans_prob_eos[c_end]+=1
+           for i in range(1,len(segm)):
+               try:
+                   cc = self.segmclass[ id(segm[i-1]) ]
+                   c = self.segmclass[ id(segm[i]) ]
+               except KeyError:
+                   # gibss samplingで除かれているものは無視
+                   continue
+               self.trans_prob[cc,c] += 1
+       # 正規化
+       self.trans_prob = self.trans_prob / self.trans_prob.sum(1).reshape(self.numclass,1)
+       self.trans_prob_bos = self.trans_prob_bos / np.sum( self.trans_prob_bos )
+       self.trans_prob_eos = self.trans_prob_eos / np.sum( self.trans_prob_eos )
 
 
     # list.remove( elem )だとValueErrorになる
