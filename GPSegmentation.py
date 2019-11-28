@@ -109,7 +109,8 @@ class GPSegmentation():
             #return p + math.log(plen)
             return p + log_plen
         else:
-            return math.log(1.0e-100)
+            return -1.0e100
+            #return math.log(1.0e-100)
 
     def save_model(self, basename ):
         if not os.path.exists(basename):
