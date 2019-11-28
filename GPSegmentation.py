@@ -109,7 +109,7 @@ class GPSegmentation():
             #return p + math.log(plen)
             return p + log_plen
         else:
-            return 1.0e-100
+            return math.log(1.0e-100)
 
     def save_model(self, basename ):
         if not os.path.exists(basename):
@@ -149,7 +149,8 @@ class GPSegmentation():
 
     def forward_filtering(self, d ):
         T = len(d)
-        a = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) - 1.0e-100   # 前向き確率．対数で確率を保持．1.0e-100で確率0を近似的に表現．
+        log_a = np.zeros( (len(d), self.MAX_LEN, self.numclass) )  - 1.0e100   # 前向き確率．対数で確率を保持．1.0e-100で確率0を近似的に表現．
+        #a = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) + 1.0-e100
         valid = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) # 計算された有効な値可どうか．計算されていない場所の確率を0にするため．
         z = np.ones( T ) # 正規化定数
 
@@ -170,7 +171,8 @@ class GPSegmentation():
                         #    for cc in range(self.numclass):
                         #        foward_prob += a[tt,kk,cc] * self.trans_prob[cc, c]
                         #foward_prob = math.log(np.sum( a[tt,:,:] * self.trans_prob[:,c] )) + out_prob
-                        foward_prob = logsumexp( a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
+                        foward_prob = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
+                        #foward_prob = logsumexp( a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
                     else:
                         # 最初の単語
                         foward_prob = out_prob + math.log(self.trans_prob_bos[c])
@@ -180,18 +182,22 @@ class GPSegmentation():
                         foward_prob += math.log(self.trans_prob_eos[c])
 
                     # 正規化を元に戻す
-                    a[t,k,c] = foward_prob
+                    log_a[t,k,c] = foward_prob
+                    #a[t,k,c] = foward_prob
                     valid[t,k,c] = 1.0
                     if math.isnan(foward_prob):
                         print( "a[t=%d,k=%d,c=%d] became NAN!!" % (t,k,c) )
                         sys.exit(-1)
             # 正規化
             if t-self.MIN_LEN>=0:
-                z[t] = logsumexp( a[t,:,:] )
-                a[t,:,:] -= z[t]
-                #a[t,:,:] = np.exp(a[t,:,:] - z[t])
+                z[t] = logsumexp( log_a[t,:,:] )
+                log_a[t,:,:] -= z[t]
+                #z[t] = logsumexp( a[t,:,:] )
+                #a[t,:,:] -= z[t]
 
-        return np.exp(a)*valid
+        return np.exp(log_a)*valid
+        #return np.exp(a)*valid
+
 
     def sample_idx(self, prob ):
         accm_prob = [0,] * len(prob)
