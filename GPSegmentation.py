@@ -223,7 +223,12 @@ class GPSegmentation():
             k = int(idx/self.numclass)
             c = idx % self.numclass
 
-            s = d[t-k:t+1]
+            if t-k-1<=0:
+                #先頭
+                s = d[0:t+1]
+            else:
+                #先頭以外
+                s = d[t-k:t+1]
 
             segm.insert( 0, s )
             segm_class.insert( 0, c )
