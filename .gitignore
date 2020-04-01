@@ -4,3 +4,7 @@ GaussianProcess\.so
 \.DS_Store
 
 *.pyc
+
+*.pyd
+
+\learn*
