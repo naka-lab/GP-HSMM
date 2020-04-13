@@ -8,3 +8,7 @@ GaussianProcess\.so
 *.pyd
 
 \learn*
+
+\recog*
+
+*.so

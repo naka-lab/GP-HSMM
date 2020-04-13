@@ -74,7 +74,7 @@ class GPSegmentation():
 
 
 
-
+    """
     def load_model( self, basename ):
         # GP読み込み
         for c in range(self.numclass):
@@ -86,7 +86,7 @@ class GPSegmentation():
         self.trans_prob = np.load( basename+"trans.npy", allow_pickle=True )
         self.trans_prob_bos = np.load( basename+"trans_bos.npy", allow_pickle=True )
         self.trans_prob_eos = np.load( basename+"trans_eos.npy", allow_pickle=True )
-
+    """
 
     def update_gp(self, c ):
         datay = []
@@ -96,6 +96,12 @@ class GPSegmentation():
             datax += range(len(s))
 
         self.gps[c].learn( datax, datay )
+
+        """
+        print ("check")
+        print (datax)
+        print (datay)
+        """
 
 
     def calc_emission_logprob( self, c, segm ):

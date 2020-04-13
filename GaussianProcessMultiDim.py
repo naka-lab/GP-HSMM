@@ -19,6 +19,9 @@ class GPMD:
 
         for d in range(self.__dim):
             if len(y)!=0:
+                #print ("check")
+                #print (x)
+                #print (y[:,d])
                 self.__gp[d].learn( x, y[:,d] )
             else:
                 self.__gp[d].learn( x, [] )
@@ -35,6 +38,7 @@ class GPMD:
 
         return lik
 
+    """
     def plot(self, x ):
         for d in range(self.__dim):
             plt.subplot( self.__dim, 1, d+1 )
@@ -47,10 +51,13 @@ class GPMD:
             plt.plot(x, y_min, 'b--')
             plt.plot(x, mus, 'b-')
             plt.plot(x, y_max, 'b--')
+    """
 
 
+"""
 def main():
     pass
 
 if __name__ == '__main__':
     main()
+"""

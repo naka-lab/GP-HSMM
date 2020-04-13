@@ -11,7 +11,7 @@ def learn( savedir ):
     gpsegm.load_data( files )
 
     start = time.clock()
-    for it in range(5):
+    for it in range(3):
         print( "-----", it, "-----" )
         gpsegm.learn()
         gpsegm.save_model( savedir )
@@ -19,7 +19,7 @@ def learn( savedir ):
     print( time.clock()-start )
     return gpsegm.calc_lik()
 
-
+"""
 def recog( modeldir, savedir ):
     gpsegm = GPSegmentation(2,5)
 
@@ -34,12 +34,12 @@ def recog( modeldir, savedir ):
         print( "lik =", gpsegm.calc_lik() )
     print( time.clock()-start )
     gpsegm.save_model( savedir )
-
+"""
 
 
 def main():
     learn( "learn/" )
-    recog( "learn/" , "recog/" )
+    #recog( "learn/" , "recog/" )
     return
 
 if __name__=="__main__":
