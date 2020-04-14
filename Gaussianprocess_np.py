@@ -8,7 +8,7 @@ class SORGP:
     self.inducing_points = inducing_points
 
   def k(self, xi, xj):
-    return 1.0 * np.exp(-0.5 * 1.0 * np.sum((xi - xj) * (xi - xj), 2))
+    return 1.0 * np.exp(-0.5 * 1.0 * np.sum((xi - xj) * (xi - xj), 2)) + 0.0 + 16.0 * xi * xj
 
   def cov(self, xi, xj ):
     a = np.tile( xi.reshape(-1,1,self.D), (1, len(xj), 1) )

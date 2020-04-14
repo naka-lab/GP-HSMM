@@ -39,6 +39,7 @@ cdef class GP:
         self.xt = xt
         self.yt = yt
         self.ns = len(xt)
+
         # construct covariance
         cdef double[:,:] cov = np.zeros((self.ns, self.ns))
 
@@ -51,7 +52,7 @@ cdef class GP:
 
         self.i_cov = np.linalg.inv(cov)
         self.param = np.dot(self.i_cov, self.yt)
-        
+
         self.param_cache.clear()
 
 
@@ -65,14 +66,15 @@ cdef class GP:
             for i in range(self.ns):
                 v[i] = self.covariance_func(x[k], self.xt[i])
             c = self.covariance_func(x[k], x[k]) + 1.0 / self.beta
-            
+
             mu = np.dot(v, np.dot(self.i_cov, tt))
             sigma = c - np.dot(v, np.dot(self.i_cov, v))
-            
+
             mus.append(mu)
             sigmas.append(sigma)
-        
+
         return np.array(mus), np.array(sigmas)
+
 
 
     cpdef double calc_lik( self, double[:] xs, double[:] ys ):
@@ -82,6 +84,8 @@ cdef class GP:
         cdef int ns = self.ns
         cdef double c,p,mu,sigma
         cdef double[:] v= np.zeros((ns))
+        cdef double[:] mus_ = np.zeros((n))
+        cdef double[:] sigmas_ = np.zeros((n))
 
         for k in range(n):
             # 計算結果をキャッシュして使い回す
@@ -94,7 +98,7 @@ cdef class GP:
                 c = self.covariance_func(xs[k], xs[k]) + 1.0 / self.beta
                 mu = np.dot(v, self.param)
                 sigma = c - np.dot(v, np.dot(self.i_cov, v))
-                
+
                 self.param_cache[ xs[k] ] = (mu, sigma)
 
             p = self.normpdf( ys[k] , mu, sigma )

@@ -49,7 +49,6 @@ class GPSegmentation():
             segm = []
             self.data.append( y )
 
-
             # ランダムに切る
             i = 0
             while i<len(y):
@@ -73,7 +72,6 @@ class GPSegmentation():
         self.calc_trans_prob()
 
 
-
     """
     def load_model( self, basename ):
         # GP読み込み
@@ -88,7 +86,9 @@ class GPSegmentation():
         self.trans_prob_eos = np.load( basename+"trans_eos.npy", allow_pickle=True )
     """
 
+
     def update_gp(self, c ):
+        #print ("update_gp")
         datay = []
         datax = []
         for s in self.segm_in_class[c]:
@@ -303,8 +303,10 @@ class GPSegmentation():
 
         self.update(True)
 
+    """
     def recog(self):
         self.update(False)
+    """
 
     def update(self, learning_phase=True ):
 
@@ -359,11 +361,11 @@ class GPSegmentation():
                 # 遷移確率更新
                 self.calc_trans_prob()
 
-
-
         return
 
+
     def calc_lik(self):
+        #print ("calc lik")
         lik = 0
         for segm in self.segments:
             for s in segm:

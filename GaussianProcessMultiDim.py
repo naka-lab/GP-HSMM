@@ -35,6 +35,7 @@ class GPMD:
         #x = np.asarray(x,dtype=np.float)
         for d in range(self.__dim):
             lik += self.__gp[d].calc_lik( x , y[:,d] )
+            #print (lik)
 
         return lik
 
