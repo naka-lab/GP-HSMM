@@ -8,10 +8,8 @@ no cacheVer
 
 
 class SORGP:
-  def __init__(self, inducing_points, dim ):
-    self.M = len(inducing_points)
+  def __init__(self, dim ):
     self.D = 1
-    self.inducing_points = inducing_points
     self.param_cache = {}
 
   def k(self, xi, xj):
@@ -28,6 +26,10 @@ class SORGP:
     #return self.k(a,b)
 
   def learn(self, xt, yt ):
+    max_xt = np.max(xt)
+    self.learn_inducing_points = np.arange(max_xt)[::2]
+    self.M = len( self.learn_inducing_points)
+
     self.xt = np.array(xt)
     self.yt = np.array(yt)
     self.N = len(xt)
@@ -35,9 +37,9 @@ class SORGP:
     self.sig2 = 1.0
 
     # kernel
-    self.Kmm = self.cov( self.inducing_points, self.inducing_points )
+    self.Kmm = self.cov( self.learn_inducing_points, self.learn_inducing_points )
     self.Kmm_inv = np.linalg.inv( self.Kmm+np.eye(self.M, self.M) )
-    self.Knm = self.cov( self.xt, self.inducing_points )
+    self.Knm = self.cov( self.xt, self.learn_inducing_points )
     self.Kmn = self.Knm.T
     #self.Knn = self.cov( self.xt, self.xt )
     #p.150
@@ -51,6 +53,9 @@ class SORGP:
 
 
   def plot(self, x, y=False):
+      max_x = np.max(x)
+      inducing_points = np.arange(max_x)[::2]
+
       mus, sigmas, lik = self.predict( x.reshape(-1,1), y)
       plt.plot( x, mus )
 
@@ -59,7 +64,7 @@ class SORGP:
 
       plt.fill_between(x, y_min, y_max, facecolor="lavender" , alpha=0.9 , edgecolor="lavender"  )
 
-      for p in self.inducing_points:
+      for p in inducing_points:
         plt.plot( p, [0.0], "kx" )
       plt.plot(self.xt, self.yt)
       plt.show()
@@ -75,7 +80,7 @@ class SORGP:
     sigmas = []
     K = len(x)
 
-    Kxm = self.cov( x.reshape(-1,1), self.inducing_points )
+    Kxm = self.cov( x.reshape(-1,1), self.learn_inducing_points )
     Kmx = Kxm.T
 
     sig = np.dot(np.dot( Kxm, self.S ), Kmx )

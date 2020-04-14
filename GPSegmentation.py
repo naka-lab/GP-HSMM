@@ -36,7 +36,7 @@ class GPSegmentation():
         self.dim = dim
         self.numclass = nclass
         self.segmlen = 3
-        self.gps = [ GaussianProcessMultiDim.GPMD(inducing_points, dim) for i in range(self.numclass) ]
+        self.gps = [ GaussianProcessMultiDim.GPMD( dim ) for i in range(self.numclass) ]
         self.segm_in_class= [ [] for i in range(self.numclass) ]
         self.segmclass = {}
         self.segments = []
