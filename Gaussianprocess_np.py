@@ -1,40 +1,57 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+"""
+sor GP
+no cacheVer
+"""
+
+
 class SORGP:
   def __init__(self, inducing_points, dim ):
     self.M = len(inducing_points)
-    self.D = dim
+    self.D = 1
     self.inducing_points = inducing_points
+    self.param_cache = {}
 
   def k(self, xi, xj):
-    return 1.0 * np.exp(-0.5 * 1.0 * np.sum((xi - xj) * (xi - xj), 2)) + 0.0 + 16.0 * xi * xj
+    return 1.0 * np.exp(-0.5 * 1.0 * np.sum((xi - xj) * (xi - xj), 2))
 
   def cov(self, xi, xj ):
     a = np.tile( xi.reshape(-1,1,self.D), (1, len(xj), 1) )
     b = np.tile( xj.reshape(1,-1,self.D), (len(xi), 1, 1) )
+    #print (a.shape)
+    #print (b.shape)
+    #return self.k(a,b) + 16.0 * np.multiply(xi, xj.T)
     return self.k(a,b)
+    #original
+    #return self.k(a,b)
 
   def learn(self, xt, yt ):
     self.xt = np.array(xt)
     self.yt = np.array(yt)
-    N = len(xt)
+    self.N = len(xt)
 
     self.sig2 = 1.0
 
-    # カーネル行列を定義
+    # kernel
     self.Kmm = self.cov( self.inducing_points, self.inducing_points )
     self.Kmm_inv = np.linalg.inv( self.Kmm+np.eye(self.M, self.M) )
     self.Knm = self.cov( self.xt, self.inducing_points )
     self.Kmn = self.Knm.T
-    self.Knn = self.cov( self.xt, self.xt )
+    #self.Knn = self.cov( self.xt, self.xt )
+    #p.150
+    self.Knn = self.cov( self.xt, self.xt ) * np.eye(self.N, self.N)
     self.Knn_ = np.dot( np.dot(self.Knm, self.Kmm_inv), self.Kmn )
 
-    # Σ
-    self.S = np.linalg.inv( self.Kmm + 1/self.sig2 * np.dot(self.Kmn, self.Knm) )
+    # Sigma (original)
+    self.S = np.linalg.inv( self.Kmm + 1/self.sig2 * np.dot(self.Kmn, self.Knm))
+    # Sigma
+    #self.S = np.linalg.inv( self.Kmm + 1/self.sig2 * np.dot(self.Kmn, self.Knm) + np.eye(self.M, self.M))
 
-  def plot(self, x):
-      mus, sigmas = self.predict( x.reshape(-1,1) )
+
+  def plot(self, x, y=False):
+      mus, sigmas, lik = self.predict( x.reshape(-1,1), y)
       plt.plot( x, mus )
 
       y_max = mus + np.sqrt(sigmas.flatten())
@@ -47,7 +64,12 @@ class SORGP:
       plt.plot(self.xt, self.yt)
       plt.show()
 
-  def predict( self, x ):
+      print ("lik",lik)
+
+  def normpdf(self, y, mu, sigma):
+        return 1./(np.sqrt(2*np.pi)*sigma)*np.exp(-0.5 * ((y - mu)/sigma)**2)
+
+  def predict( self, x, y ):
     x = np.array(x)
     mus = []
     sigmas = []
@@ -59,4 +81,11 @@ class SORGP:
     sig = np.dot(np.dot( Kxm, self.S ), Kmx )
     mu = 1/self.sig2 * np.dot( np.dot( np.dot(Kxm, self.S ), self.Kmn), self.yt.reshape(-1,1) )
 
-    return mu.flatten(), np.diag(sig).flatten()
+    p = self.normpdf(y, mu.flatten(), np.diag(sig).flatten())
+
+    p[p <= 0] = 0.000000000001
+
+    p_ = p.sum()
+    lik = np.log(p_)
+
+    return mu.flatten(), np.diag(sig).flatten(), lik

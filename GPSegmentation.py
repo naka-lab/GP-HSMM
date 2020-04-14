@@ -23,12 +23,20 @@ class GPSegmentation():
     MIN_LEN = 5
     AVE_LEN = 10
     SKIP_LEN = 1
+    denom = 2
+
+    INDMAX_NUM = int(MAX_LEN/denom)
+    #INDMAX_NUM = 20
+    global inducing_points
+    #random
+    #inducing_points = np.array([np.random.randint(0,MAX_LEN,1) for ii in range(INDMAX_NUM)])
+    inducing_points = np.arange(MAX_LEN)[::denom]
 
     def __init__(self, dim, nclass):
         self.dim = dim
         self.numclass = nclass
         self.segmlen = 3
-        self.gps = [ GaussianProcessMultiDim.GPMD(dim) for i in range(self.numclass) ]
+        self.gps = [ GaussianProcessMultiDim.GPMD(inducing_points, dim) for i in range(self.numclass) ]
         self.segm_in_class= [ [] for i in range(self.numclass) ]
         self.segmclass = {}
         self.segments = []

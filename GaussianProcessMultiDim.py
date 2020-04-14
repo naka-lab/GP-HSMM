@@ -4,14 +4,14 @@ from __future__ import print_function
 import pyximport
 import numpy as np
 pyximport.install(setup_args={'include_dirs':[np.get_include()]}, inplace=True)
-import GaussianProcess
+import Gaussianprocess_np
 import matplotlib.pyplot as plt
 
 
 class GPMD:
-    def __init__(self, dim):
+    def __init__(self, inducing_points, dim):
         self.__dim = dim
-        self.__gp = [ GaussianProcess.GP() for d in range(self.__dim) ]
+        self.__gp = [ Gaussianprocess_np.SORGP(inducing_points, dim) for d in range(self.__dim) ]
 
     def learn(self,x, y ):
         y = np.array(y, dtype=np.float).reshape( (-1,self.__dim) )
@@ -28,16 +28,17 @@ class GPMD:
 
 
     def calc_lik(self, x, y ):
-        lik = 0.0
+        liks = 0.0
 
         if self.__dim==1:
             y = np.asarray(y, dtype=np.float).reshape( (-1,self.__dim) )
         #x = np.asarray(x,dtype=np.float)
         for d in range(self.__dim):
-            lik += self.__gp[d].calc_lik( x , y[:,d] )
+            mu, sig, lik = self.__gp[d].predict( x , y[:,d] )
+            liks += lik
             #print (lik)
 
-        return lik
+        return liks
 
     """
     def plot(self, x ):
