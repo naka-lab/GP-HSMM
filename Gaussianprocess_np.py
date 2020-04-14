@@ -8,9 +8,10 @@ no cacheVer
 
 
 class SORGP:
-  def __init__(self, dim ):
+  def __init__(self, denom, dim ):
     self.D = 1
     self.param_cache = {}
+    self.denom = denom
 
   def k(self, xi, xj):
     return 1.0 * np.exp(-0.5 * 1.0 * np.sum((xi - xj) * (xi - xj), 2))
@@ -27,7 +28,7 @@ class SORGP:
 
   def learn(self, xt, yt ):
     max_xt = np.max(xt)
-    self.learn_inducing_points = np.arange(max_xt)[::2]
+    self.learn_inducing_points = np.arange(max_xt)[::self.denom]
     self.M = len( self.learn_inducing_points)
 
     self.xt = np.array(xt)
@@ -54,7 +55,7 @@ class SORGP:
 
   def plot(self, x, y=False):
       max_x = np.max(x)
-      inducing_points = np.arange(max_x)[::2]
+      inducing_points = np.arange(max_x)[::self.denom]
 
       mus, sigmas, lik = self.predict( x.reshape(-1,1), y)
       plt.plot( x, mus )

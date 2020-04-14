@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 
 
 class GPMD:
-    def __init__(self, dim):
+    def __init__(self, denom, dim):
         self.__dim = dim
-        self.__gp = [ Gaussianprocess_np.SORGP( dim ) for d in range(self.__dim) ]
+        self.__gp = [ Gaussianprocess_np.SORGP( denom, dim ) for d in range(self.__dim) ]
 
     def learn(self,x, y ):
         y = np.array(y, dtype=np.float).reshape( (-1,self.__dim) )
