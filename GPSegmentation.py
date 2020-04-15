@@ -19,12 +19,12 @@ from cymath import logsumexp
 
 class GPSegmentation():
     # parameters
-    MAX_LEN = 20
-    MIN_LEN = 5
-    AVE_LEN = 10
+    MAX_LEN = 100
+    MIN_LEN = 50
+    AVE_LEN = 75
     SKIP_LEN = 1
     global denom
-    denom = 2
+    denom = 3
 
     #INDMAX_NUM = int(MAX_LEN/denom)
     #INDMAX_NUM = 20
@@ -46,7 +46,7 @@ class GPSegmentation():
         self.trans_prob_eos = np.ones( nclass )
         self.is_initialized = False
 
-        self.prior_table = [self.AVE_LEN**i * math.exp(-self.AVE_LEN) / math.factorial(i) for i in range(self.MAX_LEN)]
+        #self.prior_table = [self.AVE_LEN**i * math.exp(-self.AVE_LEN) / math.factorial(i) for i in range(self.MAX_LEN)]
 
     def load_data(self, filenames, classfile=None ):
         self.data = []
@@ -81,7 +81,7 @@ class GPSegmentation():
         self.calc_trans_prob()
 
 
-    """
+
     def load_model( self, basename ):
         # GP読み込み
         for c in range(self.numclass):
@@ -93,7 +93,7 @@ class GPSegmentation():
         self.trans_prob = np.load( basename+"trans.npy", allow_pickle=True )
         self.trans_prob_bos = np.load( basename+"trans_bos.npy", allow_pickle=True )
         self.trans_prob_eos = np.load( basename+"trans_eos.npy", allow_pickle=True )
-    """
+
 
 
     def update_gp(self, c ):
@@ -105,12 +105,6 @@ class GPSegmentation():
             datax += range(len(s))
 
         self.gps[c].learn( datax, datay )
-
-        """
-        print ("check")
-        print (datax)
-        print (datay)
-        """
 
 
     def calc_emission_logprob( self, c, segm ):
@@ -312,10 +306,10 @@ class GPSegmentation():
 
         self.update(True)
 
-    """
+
     def recog(self):
         self.update(False)
-    """
+
 
     def update(self, learning_phase=True ):
 

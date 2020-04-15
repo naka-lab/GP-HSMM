@@ -39,27 +39,3 @@ class GPMD:
             #print (lik)
 
         return liks
-
-    """
-    def plot(self, x ):
-        for d in range(self.__dim):
-            plt.subplot( self.__dim, 1, d+1 )
-
-            mus, sigmas = self.__gp[d].predict(x)
-            y_min = mus - sigmas*2
-            y_max = mus + sigmas*2
-
-            plt.fill_between( x, y_min, y_max, facecolor="lavender" , alpha=0.9 , edgecolor="lavender"  )
-            plt.plot(x, y_min, 'b--')
-            plt.plot(x, mus, 'b-')
-            plt.plot(x, y_max, 'b--')
-    """
-
-
-"""
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()
-"""
