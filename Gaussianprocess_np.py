@@ -19,12 +19,8 @@ class SORGP:
   def cov(self, xi, xj ):
     a = np.tile( xi.reshape(-1,1,self.D), (1, len(xj), 1) )
     b = np.tile( xj.reshape(1,-1,self.D), (len(xi), 1, 1) )
-    #print (a.shape)
-    #print (b.shape)
     #return self.k(a,b) + 16.0 * np.multiply(xi, xj.T)
     return self.k(a,b)
-    #original
-    #return self.k(a,b)
 
   def learn(self, xt, yt ):
     max_xt = np.max(xt)
