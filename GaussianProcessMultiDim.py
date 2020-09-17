@@ -4,15 +4,15 @@ from __future__ import print_function
 import pyximport
 import numpy as np
 #pyximport.install(setup_args={'include_dirs':[np.get_include()]}, inplace=True)
-import Gaussianprocess_torch_ind as GP_i
+import Gaussianprocess_torch_WOinv as GP_lu
 import matplotlib.pyplot as plt
 import time
 
 
 class GPMD:
-    def __init__(self, dim, MAX_LEN):
+    def __init__(self, dim):
         self.__dim = dim
-        self.__gp = [ GP_i.GP( self.__MAX_LEN, 1, 16.0, "cpu" ) for d in range(self.__dim) ]
+        self.__gp = [ GP_lu.GP(1, 16.0, "cpu") for d in range(self.__dim) ]
         #self.b_time = 0
 
     def learn(self,x, y ):
@@ -27,7 +27,7 @@ class GPMD:
                 self.__gp[d].learn( x, y[:,d] )
             else:
                 #self.__gp[d].learn( x, [] )
-                self.__gp[d] = GP(self.__MAX_LEN,1,16.0, "cpu")
+                self.__gp[d] = GP_lu.GP(1,16.0, "cpu")
 
 
     def calc_lik(self, x, y ):

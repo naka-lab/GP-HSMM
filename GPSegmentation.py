@@ -14,9 +14,6 @@ import pyximport
 pyximport.install(setup_args={'include_dirs':[np.get_include()]}, inplace=True)
 from cymath import logsumexp
 
-
-
-
 class GPSegmentation():
     # parameters
     MAX_LEN = 100
@@ -28,7 +25,7 @@ class GPSegmentation():
         self.dim = dim
         self.numclass = nclass
         self.segmlen = 3
-        self.gps = [ GaussianProcessMultiDim.GPMD( dim, self.MAX_LEN ) for i in range(self.numclass) ]
+        self.gps = [ GaussianProcessMultiDim.GPMD( dim ) for i in range(self.numclass) ]
         self.segm_in_class= [ [] for i in range(self.numclass) ]
         self.segmclass = {}
         self.segments = []

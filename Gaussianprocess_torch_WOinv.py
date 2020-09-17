@@ -12,8 +12,8 @@ no cacheVer
 """
 
 
-class GP_i:
-  def __init__(self, MAX_LEN, dim, theta=16.0, device="cuda" ):
+class GP:
+  def __init__(self, dim, theta=16.0, device="cuda" ):
     self.beta = 10.0
     self.dim = dim
     self.device = device
@@ -21,13 +21,6 @@ class GP_i:
     self.param_cache = {}
     self.N = 0
     #self.c_time = 0
-
-    #Inducing_points 現状等間隔(1つ飛ばし)
-    inducing_points = np.arange(MAX_LEN)[::1]
-    self.M = len(inducing_points)
-    self.inducing_points = torch.tensor( inducing_points  )
-    self.sig2 = 1.0
-
 
   def k(self, xi, xj):
     return 1.0 * torch.exp(-0.5 * 1.0 * torch.sum((xi - xj) * (xi - xj), 2)) + (self.theta*( xi.view(xi.shape[0], -1) * xj.view(xj.shape[0], -1) ))
@@ -45,35 +38,33 @@ class GP_i:
     # to gpu
     self.xt.to(self.device)
     self.yt.to(self.device)
-    self.inducing_points.to(self.device)
 
     # カーネル行列を定義
-    #self.K = self.cov( self.xt, self.xt ) + torch.eye(self.N, self.N)/self.beta
+    self.K = self.cov( self.xt, self.xt ) + torch.eye(self.N, self.N)/self.beta
     #self.K_inv = torch.inverse( self.K )
-    self.Kmm = self.cov( self.inducing_points, self.inducing_points )
-    self.Kmm_inv = torch.inverse( self.Kmm+torch.eye(self.M, self.M) ).double()
-    self.Knm = self.cov( self.xt, self.inducing_points ).double()
-    self.Kmn = torch.t( self.Knm ).double()
-    self.Knn = self.cov( self.xt, self.xt )
-    self.Knn_ = torch.mm( torch.mm(self.Knm, self.Kmm_inv), self.Kmn )
-
-    self.S = torch.inverse( self.Kmm + 1/self.sig2 * torch.mm(self.Kmn, self.Knm) )
-
     self.param_cache.clear()
 
   def predict( self, x ):
     x = torch.tensor(x).reshape(-1,self.dim)
 
-    kxm = self.cov( x, self.inducing_points )
-    kmx = torch.t( kxm )
+    kx = self.cov( x, self.xt )
+    k = self.cov( x, x) + 1.0/self.beta
 
-    sig = torch.mm(torch.mm( kxm, self.S ), kmx )
-    mu = 1/self.sig2 * torch.mm( torch.mm( torch.mm(kxm, self.S ), self.Kmn), self.yt.reshape(-1,self.dim) )
+    #mu = torch.mm( torch.mm( kx, self.K_inv ), self.yt.reshape(-1,1) )
+    #sig = k - torch.mm( kx, torch.mm(self.K_inv, torch.t(kx)) )
 
     #t_ = time.time()
     #mus = mu.detach().numpy().flatten()
     #sigs = sig.diag().detach().numpy().flatten()
     #self.c_time += time.time() -t_
+
+    # K a = yを満たすa（ = K^-1 y）を逆行列を使わずに解く
+    a, _ = torch.solve(self.yt.reshape(-1,1) , self.K)
+    mu = torch.mm( kx, a )
+
+    # K b = kx^Tを満たすb（= K^-1 kx^T）を逆行列を使わずに解く
+    b, _ = torch.solve( torch.t(kx), self.K)
+    sig = k - torch.mm( kx, b )
 
     return mu.detach().numpy().flatten(), sig.diag().detach().numpy().flatten()
 
