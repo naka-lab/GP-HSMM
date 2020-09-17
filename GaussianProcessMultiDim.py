@@ -12,6 +12,7 @@ import time
 class GPMD:
     def __init__(self, dim, MAX_LEN):
         self.__dim = dim
+        self.__MAX_LEN = MAX_LEN
         self.__gp = [ GP_i.GP( self.__MAX_LEN, 1, 16.0, "cpu" ) for d in range(self.__dim) ]
         #self.b_time = 0
 
@@ -38,7 +39,7 @@ class GPMD:
             y = np.asarray(y, dtype=np.float).reshape( (-1,self.__dim) )
         #x = np.asarray(x,dtype=np.float)
         for d in range(self.__dim):
-            mu, sig, lik = self.__gp[d].predict( x , y[:,d] )
+            mu, sig, lik = self.__gp[d].calc_lik( x , y[:,d] )
             liks += lik
             #print (lik)
         #self.b_time += time.time() - s_time
