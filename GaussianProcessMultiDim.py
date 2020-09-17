@@ -38,7 +38,7 @@ class GPMD:
             y = np.asarray(y, dtype=np.float).reshape( (-1,self.__dim) )
         #x = np.asarray(x,dtype=np.float)
         for d in range(self.__dim):
-            mu, sig, lik = self.__gp[d].calc_lik( x , y[:,d] )
+            lik = self.__gp[d].calc_lik( x , y[:,d] )
             liks += lik
             #print (lik)
         #self.b_time += time.time() - s_time

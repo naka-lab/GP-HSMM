@@ -13,7 +13,7 @@ def learn( savedir ):
 
     gpsegm = GPSegmentation(dim, classes)
 
-    files =  [ "40fps_data_norma%03d.txt" % j for j in range(6) ][::2]
+    files =  [ "40fps_data_norma%03d.txt" % j for j in range(6) ]
     gpsegm.load_data( files )
 
     liks = []

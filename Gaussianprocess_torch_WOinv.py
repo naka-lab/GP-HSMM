@@ -96,7 +96,7 @@ class GP:
         p = 0.000000000001
       lik += np.log( p )
 
-    return mu.flatten(), np.diag(sigma).flatten(), lik
+    return lik
 
   #def time_r__(self):
   #    return self.c_time
