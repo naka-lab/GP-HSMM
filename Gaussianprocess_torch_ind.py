@@ -101,10 +101,11 @@ class GP:
         self.param_cache[xs[j]] = (mu[j], sigma[j])
 
       p = self.normpdf(ys[j], mu[j], sigma[j])
-      p[p <= 0] = 0.000000000001
+      if p<=0:
+        p = 0.000000000001
       lik += np.log( p )
 
-    return mu.flatten(), np.diag(sig).flatten(), lik
+    return mu.flatten(), np.diag(sigma).flatten(), lik
 
   #def time_r__(self):
   #    return self.c_time
