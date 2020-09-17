@@ -12,7 +12,7 @@ no cacheVer
 """
 
 
-class GP_i:
+class GP:
   def __init__(self, MAX_LEN, dim, theta=16.0, device="cuda" ):
     self.beta = 10.0
     self.dim = dim

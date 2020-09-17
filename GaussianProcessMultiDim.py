@@ -27,7 +27,7 @@ class GPMD:
                 self.__gp[d].learn( x, y[:,d] )
             else:
                 #self.__gp[d].learn( x, [] )
-                self.__gp[d] = GP(self.__MAX_LEN,1,16.0, "cpu")
+                self.__gp[d] = GP_i.GP(self.__MAX_LEN,1,16.0, "cpu")
 
 
     def calc_lik(self, x, y ):
