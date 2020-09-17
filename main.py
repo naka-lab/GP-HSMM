@@ -13,7 +13,7 @@ def learn( savedir ):
 
     gpsegm = GPSegmentation(dim, classes)
 
-    files =  [ "40fps_data_norma%03d.txt" % j for j in range(8) ][::2]
+    files =  [ "40fps_data_norma%03d.txt" % j for j in range(6) ][::2]
     gpsegm.load_data( files )
 
     liks = []
@@ -35,14 +35,18 @@ def learn( savedir ):
 
 
 def recog( modeldir, savedir ):
-    gpsegm = GPSegmentation(1,5)
+    dim = 1
+    classes = 5
+    num_learn = 5
 
-    gpsegm.load_data( [ "testdata2d_%03d.txt" % j for j in range(4) ] )
+    gpsegm = GPSegmentation(dim, classes)
+
+    gpsegm.load_data( [ "40fps_data_norma%03d.txt" % j for j in range(7,9) ] )
     gpsegm.load_model( modeldir )
 
 
     start = time.clock()
-    for it in range(5):
+    for it in range(num_learn):
         print( "-----", it, "-----" )
         gpsegm.recog()
         print( "lik =", gpsegm.calc_lik() )

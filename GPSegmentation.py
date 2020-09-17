@@ -23,21 +23,12 @@ class GPSegmentation():
     MIN_LEN = 50
     AVE_LEN = 75
     SKIP_LEN = 1
-    global denom
-    denom = 3
-
-    #INDMAX_NUM = int(MAX_LEN/denom)
-    #INDMAX_NUM = 20
-    #global inducing_points
-    #random
-    #inducing_points = np.array([np.random.randint(0,MAX_LEN,1) for ii in range(INDMAX_NUM)])
-    #inducing_points = np.arange(MAX_LEN)[::denom]
 
     def __init__(self, dim, nclass):
         self.dim = dim
         self.numclass = nclass
         self.segmlen = 3
-        self.gps = [ GaussianProcessMultiDim.GPMD( denom, dim ) for i in range(self.numclass) ]
+        self.gps = [ GaussianProcessMultiDim.GPMD( dim, self.MAX_LEN ) for i in range(self.numclass) ]
         self.segm_in_class= [ [] for i in range(self.numclass) ]
         self.segmclass = {}
         self.segments = []
@@ -46,6 +37,7 @@ class GPSegmentation():
         self.trans_prob_eos = np.ones( nclass )
         self.is_initialized = False
 
+        self.a_time = 0
         #self.prior_table = [self.AVE_LEN**i * math.exp(-self.AVE_LEN) / math.factorial(i) for i in range(self.MAX_LEN)]
 
     def load_data(self, filenames, classfile=None ):
@@ -104,7 +96,9 @@ class GPSegmentation():
             datay += [ y for y in s ]
             datax += range(len(s))
 
+        t_time = time.time()
         self.gps[c].learn( datax, datay )
+        self.a_time += time.time() - t_time
 
 
     def calc_emission_logprob( self, c, segm ):
@@ -364,6 +358,7 @@ class GPSegmentation():
                 # 遷移確率更新
                 self.calc_trans_prob()
 
+        print ("gp learn time", self.a_time)
         return
 
 
