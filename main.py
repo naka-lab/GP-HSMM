@@ -5,13 +5,15 @@ from GPSegmentation import GPSegmentation
 import time
 
 def learn( savedir ):
-    gpsegm = GPSegmentation(2,5)
+    dim = 1
+    classes = 4
+    gpsegm = GPSegmentation( dim, classes)
 
-    files =  [ "testdata2d_%03d.txt" % j for j in range(4) ]
+    files =  [ "testdata1d_%03d.txt" % j for j in range(4) ]
     gpsegm.load_data( files )
 
     start = time.clock()
-    for it in range(5):
+    for it in range(10):
         print( "-----", it, "-----" )
         gpsegm.learn()
         gpsegm.save_model( savedir )
@@ -39,7 +41,7 @@ def recog( modeldir, savedir ):
 
 def main():
     learn( "learn/" )
-    recog( "learn/" , "recog/" )
+    #recog( "learn/" , "recog/" )
     return
 
 if __name__=="__main__":

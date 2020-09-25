@@ -16,19 +16,21 @@ from cymath import logsumexp
 
 
 
-
 class GPSegmentation():
     # parameters
     MAX_LEN = 20
     MIN_LEN = 5
     AVE_LEN = 10
     SKIP_LEN = 1
+    w = 2
+    indpoints = np.arange(MAX_LEN)[::w]
+    indpoints = np.array(indpoints, dtype=np.float)
 
     def __init__(self, dim, nclass):
         self.dim = dim
         self.numclass = nclass
         self.segmlen = 3
-        self.gps = [ GaussianProcessMultiDim.GPMD(dim) for i in range(self.numclass) ]
+        self.gps = [ GaussianProcessMultiDim.GPMD(dim, self.indpoints) for i in range(self.numclass) ]
         self.segm_in_class= [ [] for i in range(self.numclass) ]
         self.segmclass = {}
         self.segments = []
@@ -37,7 +39,8 @@ class GPSegmentation():
         self.trans_prob_eos = np.ones( nclass )
         self.is_initialized = False
 
-        self.prior_table = [self.AVE_LEN**i * math.exp(-self.AVE_LEN) / math.factorial(i) for i in range(self.MAX_LEN)]
+        self.a_time = 0
+        #self.prior_table = [self.AVE_LEN**i * math.exp(-self.AVE_LEN) / math.factorial(i) for i in range(self.MAX_LEN)]
 
     def load_data(self, filenames, classfile=None ):
         self.data = []
@@ -73,8 +76,6 @@ class GPSegmentation():
         self.calc_trans_prob()
 
 
-
-
     def load_model( self, basename ):
         # GP読み込み
         for c in range(self.numclass):
@@ -95,7 +96,10 @@ class GPSegmentation():
             datay += [ y for y in s ]
             datax += range(len(s))
 
+        t_time = time.time()
         self.gps[c].learn( datax, datay )
+        self.a_time += time.time() - t_time
+        print (self.a_time)
 
 
     def calc_emission_logprob( self, c, segm ):
@@ -353,8 +357,7 @@ class GPSegmentation():
                 # 遷移確率更新
                 self.calc_trans_prob()
 
-
-
+        print ("gp learn time", self.a_time)
         return
 
     def calc_lik(self):
