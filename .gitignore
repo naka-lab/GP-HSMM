@@ -8,3 +8,5 @@ GaussianProcess\.so
 \learn
 
 *.pyd
+
+local_data/

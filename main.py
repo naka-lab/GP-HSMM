@@ -6,10 +6,10 @@ import time
 
 def learn( savedir ):
     dim = 1
-    classes = 4
+    classes = 5
     gpsegm = GPSegmentation( dim, classes)
 
-    files =  [ "testdata1d_%03d.txt" % j for j in range(4) ]
+    files =  [ "local_data/40fps_data_norma%03d.txt" % j for j in range(4) ]
     gpsegm.load_data( files )
 
     start = time.clock()

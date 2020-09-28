@@ -18,11 +18,11 @@ from cymath import logsumexp
 
 class GPSegmentation():
     # parameters
-    MAX_LEN = 20
-    MIN_LEN = 5
-    AVE_LEN = 10
+    MAX_LEN = 60
+    MIN_LEN = 10
+    AVE_LEN = 40
     SKIP_LEN = 1
-    w = 2
+    w = 1
     indpoints = np.arange(MAX_LEN)[::w]
     indpoints = np.array(indpoints, dtype=np.float)
 
@@ -48,7 +48,7 @@ class GPSegmentation():
         self.is_initialized = False
 
         for fname in filenames:
-            y = np.loadtxt( fname )
+            y = np.loadtxt( fname )[::3]
             segm = []
             self.data.append( y )
 

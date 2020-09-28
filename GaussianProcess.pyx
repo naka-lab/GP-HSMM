@@ -74,14 +74,10 @@ cdef class GP:
         cdef double c,p,mu,sigma
         cdef double[:] kmx= np.zeros(self.M)
 
-        if self.ns == 0:
-          p_ = 0.000000000001
-          for k in range(n):
-            lik += log( p_ )
-          return lik
-
         S_ = self.S[0:self.M][0:self.M]
-        Kmn_ = self.Kmn[0:self.M][0:self.ns]
+        #Kmn_ = self.Kmn[0:self.M][0:self.ns]
+        Kmn_ = np.array(self.Kmn)
+        Kmn__ = np.reshape(Kmn_, [self.M, self.ns])
         mus = np.zeros((n))
         sigmas = np.zeros((n))
 
@@ -95,7 +91,7 @@ cdef class GP:
                     kxm[i] = self.covariance_func(xs[k], self.indpoints[i])
                 kmx = kxm.T
                 sigma = np.dot(np.dot( kxm, S_ ), kmx )
-                mu = 1/self.sig2 * np.dot( np.dot( np.dot(kxm, S_ ), Kmn_), self.yt )
+                mu = 1/self.sig2 * np.dot( np.dot( np.dot(kxm, S_ ), Kmn__), self.yt )
 
                 self.param_cache[ xs[k] ] = (mu, sigma)
 
