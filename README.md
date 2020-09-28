@@ -28,8 +28,12 @@ majorVersion = int(s[:-2]) - 6
 を使いたいVisual Studioのバージョンに書き換えてください．
 VS2012の場合は，`majorVersion = 11`となります．
 
+
+## 注意
+GPSegmentation.pyのl.25-27で補助点を決めている．
+
 # LICENSE
-This program is freely available for free non-commercial use. 
+This program is freely available for free non-commercial use.
 If you publish results obtained using this program, please cite:
 
 ```
