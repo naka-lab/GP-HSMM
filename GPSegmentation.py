@@ -217,8 +217,14 @@ class GPSegmentation():
         segm = []
         segm_class = []
 
+        c = -1
         while True:
-            idx = self.sample_idx( a[t].reshape( self.MAX_LEN*self.numclass ))
+            if t==T-1:
+                transp = self.trans_prob_eos
+            else:
+                transp = self.trans_prob[:,c]
+
+            idx = self.sample_idx( (a[t]*transp).reshape( self.MAX_LEN*self.numclass ))
 
             k = int(idx/self.numclass)
             c = idx % self.numclass
