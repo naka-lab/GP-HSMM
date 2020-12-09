@@ -12,3 +12,5 @@ GaussianProcess\.so
 \recog*
 
 *.so
+
+local_data/
