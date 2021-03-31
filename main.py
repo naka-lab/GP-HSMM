@@ -10,13 +10,13 @@ def learn( savedir ):
     files =  [ "testdata2d_%03d.txt" % j for j in range(4) ]
     gpsegm.load_data( files )
 
-    start = time.clock()
+    start = time.time()
     for it in range(5):
         print( "-----", it, "-----" )
         gpsegm.learn()
         gpsegm.save_model( savedir )
         print( "lik =", gpsegm.calc_lik() )
-    print( time.clock()-start )
+    print( time.time()-start )
     return gpsegm.calc_lik()
 
 
@@ -27,12 +27,12 @@ def recog( modeldir, savedir ):
     gpsegm.load_model( modeldir )
 
 
-    start = time.clock()
+    start = time.time()
     for it in range(5):
         print( "-----", it, "-----" )
         gpsegm.recog()
         print( "lik =", gpsegm.calc_lik() )
-    print( time.clock()-start )
+    print( time.time()-start )
     gpsegm.save_model( savedir )
 
 

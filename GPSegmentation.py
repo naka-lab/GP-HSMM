@@ -328,13 +328,13 @@ class GPSegmentation():
                 # 遷移確率更新
                 self.calc_trans_prob()
 
-            start = time.clock()
+            start = time.time()
             print( "forward...", end="")
             a = self.forward_filtering( d )
 
             print( "backward...", end="" )
             segm, segm_class = self.backward_sampling( a, d )
-            print( time.clock()-start, "sec" )
+            print( time.time()-start, "sec" )
 
             print( "Number of classified segments: [", end="")
             for s in self.segm_in_class:
