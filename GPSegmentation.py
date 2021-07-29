@@ -358,8 +358,10 @@ class GPSegmentation():
 
                 # 遷移確率更新
                 self.calc_trans_prob()
-
-
+                
+        # hyperparameter更新
+        #for c in range(self.numclass):
+        #    self.gps[c].estimate_hyperparams(100)
 
         return
 
