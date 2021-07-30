@@ -117,12 +117,12 @@ cdef class GP:
         old_lik = init_lik
 
         max_params = [self.beta, self.theta0, self.theta1, self.theta2, self.theta3]
-        old_params = [self.beta, self.theta0, self.theta1, self.theta2, self.theta3]
         new_params = [self.beta, self.theta0, self.theta1, self.theta2, self.theta3]
         
         for itr in range(niter):
             
             for d in range(5):
+                old_params = [self.beta, self.theta0, self.theta1, self.theta2, self.theta3]
                 new_params[d] = old_params[d] + step*random.gauss(0,1)
                 
                 # 新しいパラメータで学習・尤度計算
@@ -145,6 +145,7 @@ cdef class GP:
                     max_params = [self.beta, self.theta0, self.theta1, self.theta2, self.theta3]
 
         self.beta, self.theta0, self.theta1, self.theta2, self.theta3 = max_params
+        #print(init_lik, "->", max_lik)
         return
         
 
