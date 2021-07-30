@@ -123,7 +123,10 @@ cdef class GP:
             
             for d in range(5):
                 old_params = [self.beta, self.theta0, self.theta1, self.theta2, self.theta3]
-                new_params[d] = old_params[d] + step*random.gauss(0,1)
+                
+                # 対数空間でランダムに動かす
+                # p' = exp( log(p) + rand )
+                new_params[d] = old_params[d] * exp (step * random.gauss(0,1))
                 
                 # 新しいパラメータで学習・尤度計算
                 self.beta, self.theta0, self.theta1, self.theta2, self.theta3 = new_params
