@@ -28,13 +28,10 @@ def recog( modeldir, savedir ):
 
 
     start = time.time()
-    for it in range(5):
-        print( "-----", it, "-----" )
-        gpsegm.recog()
-        print( "lik =", gpsegm.calc_lik() )
+    gpsegm.recog()
+    print( "lik =", gpsegm.calc_lik() )
     print( time.time()-start )
     gpsegm.save_model( savedir )
-
 
 
 def main():

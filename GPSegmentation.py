@@ -146,6 +146,95 @@ class GPSegmentation():
         for c in range(self.numclass):
             np.save( basename+"class%03d.npy" % c, self.segm_in_class[c] )
 
+    def calc_vitervi_path(self, d ):
+        T = len(d)
+        log_a = np.log( np.zeros( (len(d), self.MAX_LEN, self.numclass) )  + 1.0e-100 )  # 前向き確率．対数で確率を保持．1.0e-100で確率0を近似的に表現．
+        valid = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) # 計算された有効な値可どうか．計算されていない場所の確率を0にするため．
+        z = np.ones( T ) # 正規化定数
+        path_kc = -np.ones(  (len(d), self.MAX_LEN, self.numclass, 2), dtype=np.int32 )
+
+        # 前向き確率計算
+        for t in range(T):
+            for k in range(self.MIN_LEN,self.MAX_LEN,self.SKIP_LEN):
+                if t-k<0:
+                    break
+
+                segm = d[t-k:t+1]
+                for c in range(self.numclass):
+                    out_prob = self.calc_emission_logprob( c, segm )
+                    foward_prob = 0.0
+
+                    # 遷移確率
+                    tt = t-k-1
+                    if tt>=0:
+                        prev_prob = log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c])
+
+                        # 最大値を取る
+                        idx = np.argmax( prev_prob.reshape( self.MAX_LEN*self.numclass ))
+                        kk = int(idx/self.numclass)
+                        cc = idx % self.numclass
+
+                        path_kc[t, k, c, 0] = kk
+                        path_kc[t, k, c, 1] = cc
+
+                        foward_prob = prev_prob[kk, cc] + out_prob
+                    else:
+                        # 最初の単語
+                        foward_prob = out_prob + math.log(self.trans_prob_bos[c])
+
+                        path_kc[t, k, c, 0] = t+1
+                        path_kc[t, k, c, 1] = -1
+
+
+                    if t==T-1:
+                        # 最後の単語
+                        foward_prob += math.log(self.trans_prob_eos[c])
+
+
+                    log_a[t,k,c] = foward_prob
+                    valid[t,k,c] = 1.0
+                    if math.isnan(foward_prob):
+                        print( "a[t=%d,k=%d,c=%d] became NAN!!" % (t,k,c) )
+                        sys.exit(-1)
+            # 正規化
+            if t-self.MIN_LEN>=0:
+                z[t] = logsumexp( log_a[t,:,:] )
+                log_a[t,:,:] -= z[t]
+                #z[t] = logsumexp( a[t,:,:] )
+                #a[t,:,:] -= z[t]
+
+        # バックトラック
+        t = T-1
+        idx = np.argmax( log_a[t].reshape( self.MAX_LEN*self.numclass ))
+        k = int(idx/self.numclass)
+        c = idx % self.numclass
+
+        segm = [ d[t-k:t+1] ]
+        segm_class = [ c ]
+       
+        while True:
+            kk, cc = path_kc[t, k, c]
+
+            t = t-k-1
+            k = kk
+            c = cc
+
+            if t<=0:
+                break
+
+            if t-k-1<=0:
+                #先頭
+                s = d[0:t+1]
+            else:
+                #先頭以外
+                s = d[t-k:t+1]
+
+            segm.insert( 0, s )
+            segm_class.insert( 0, c )
+
+        return segm, segm_class
+
+
 
     def forward_filtering(self, d ):
         T = len(d)
@@ -304,7 +393,15 @@ class GPSegmentation():
         self.update(True)
 
     def recog(self):
-        self.update(False)
+        #self.update(False)
+        self.segmclass.clear()
+
+        for i, d in enumerate(self.data):
+            # viterviで解く
+            segms, classes = self.calc_vitervi_path( d )
+            self.segments[i] = segms
+            for s, c in zip( segms, classes ):
+                self.segmclass[id(s)] = c
 
     def update(self, learning_phase=True ):
 

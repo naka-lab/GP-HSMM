@@ -15,7 +15,7 @@ cdef extern from "math.h":
 
 cdef class GP:
     cdef int ns
-    cdef xt, yt
+    cdef double[:] xt, yt
     cdef double[:,:] i_cov
     cdef double[:] param
     cdef dict param_cache
@@ -42,10 +42,10 @@ cdef class GP:
         self.theta3 = 16.0
 
 
-    def learn(self, xt, yt ):
+    cpdef learn(self, xt, yt ):
         cdef int i,j
-        self.xt = xt
-        self.yt = yt
+        self.xt = np.array( xt )
+        self.yt = np.array( yt )
         self.ns = len(xt)
         # construct covariance
         cdef double[:,:] cov = np.zeros((self.ns, self.ns))
@@ -111,10 +111,11 @@ cdef class GP:
 
         return lik
     
-    cpdef estimate_hyperparams(self, niter, step=0.2):
-        init_lik = self.calc_lik( self.xt, self.yt )
-        max_lik = init_lik
-        old_lik = init_lik
+    cpdef estimate_hyperparams(self, int niter, double step=0.2):
+        cdef int itr, d
+        cdef double init_lik = self.calc_lik( self.xt, self.yt )
+        cdef double max_lik = init_lik
+        cdef double old_lik = init_lik
 
         max_params = [self.beta, self.theta0, self.theta1, self.theta2, self.theta3]
         new_params = [self.beta, self.theta0, self.theta1, self.theta2, self.theta3]
@@ -148,7 +149,7 @@ cdef class GP:
                     max_params = [self.beta, self.theta0, self.theta1, self.theta2, self.theta3]
 
         self.beta, self.theta0, self.theta1, self.theta2, self.theta3 = max_params
-        #print(init_lik, "->", max_lik)
+        # print(init_lik, "->", max_lik)
         return
         
 
