@@ -240,6 +240,8 @@ class GPSegmentation():
         #a = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) + 1.0-e100
         valid = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) # 計算された有効な値可どうか．計算されていない場所の確率を0にするため．
         z = np.ones( T ) # 正規化定数
+        m = np.zeros( len(d) )  # t-kの計算結果を入れるバッファ
+
 
         for t in range(T):
             for k in range(self.MIN_LEN,self.MAX_LEN,self.SKIP_LEN):
@@ -258,7 +260,14 @@ class GPSegmentation():
                         #    for cc in range(self.numclass):
                         #        foward_prob += a[tt,kk,cc] * self.trans_prob[cc, c]
                         #foward_prob = math.log(np.sum( a[tt,:,:] * self.trans_prob[:,c] )) + out_prob
-                        foward_prob = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
+
+
+                        if m[tt]==0:
+                            m[tt] = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) 
+                        foward_prob = m[tt] + out_prob
+                        #foward_prob = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
+
+
                         #foward_prob = logsumexp( a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
                     else:
                         # 最初の単語
