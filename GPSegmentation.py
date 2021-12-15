@@ -295,12 +295,9 @@ class GPSegmentation():
                         #foward_prob = math.log(np.sum( a[tt,:,:] * self.trans_prob[:,c] )) + out_prob
 
 
-                        # 21.12.15:高速化
                         if m[tt]==0:
                             m[tt] = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) 
                         foward_prob = m[tt] + out_prob
-
-                        # 21.12.15:高速化前
                         #foward_prob = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
 
 
