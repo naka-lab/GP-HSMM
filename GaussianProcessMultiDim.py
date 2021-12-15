@@ -47,7 +47,14 @@ class GPMD:
             plt.plot(x, y_min, 'b--')
             plt.plot(x, mus, 'b-')
             plt.plot(x, y_max, 'b--')
-            
+
+    def predict(self, x ):
+        params = []
+        for d in range(self.__dim):
+            mus, sigmas = self.__gp[d].predict(x)
+            params.append( (mus, sigmas) )
+        return params
+
     def estimate_hyperparams(self, niter):
         for d in range(self.__dim):
             self.__gp[d].estimate_hyperparams(niter)

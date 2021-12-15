@@ -13,6 +13,8 @@ import os
 import pyximport
 pyximport.install(setup_args={'include_dirs':[np.get_include()]}, inplace=True)
 from cymath import logsumexp
+from torch.distributions import Normal
+import torch
 
 
 
@@ -108,6 +110,34 @@ class GPSegmentation():
             return p + log_plen
         else:
             return math.log(1.0e-100)
+
+    def calc_emission_logprob_all(self, d):
+        T = len(d)
+        # 出力確率を計算
+        emission_prob_all = torch.zeros( ( self.numclass, self.MAX_LEN, len(d)) )
+        for c in range(self.numclass):
+            params = self.gps[c].predict( range(self.MAX_LEN) )
+            for k in range(self.MAX_LEN):
+                for dim in range( self.dim ):
+                    gauss = Normal( params[dim][0][k], params[dim][1][k] )
+                    emission_prob_all[c, k, 0:T-k] += gauss.log_prob( torch.Tensor(d[k:,dim]) )
+
+        # 累積確率にする
+        for k in range(1, self.MAX_LEN):
+            emission_prob_all[:, k, :] += emission_prob_all[:, k-1, :]
+
+
+
+        """
+        t = 100
+        k = 5
+        c = 2
+        print( self.gps[c].calc_lik( np.arange( k, dtype=np.float ), d[t-k:t] ))
+        print( emission_prob_all[c,k-1,t-k]  )
+        """
+
+        return emission_prob_all
+
 
     def save_model(self, basename ):
         if not os.path.exists(basename):
@@ -242,6 +272,8 @@ class GPSegmentation():
         z = np.ones( T ) # 正規化定数
         m = np.zeros( len(d) )  # t-kの計算結果を入れるバッファ
 
+        # 全時刻の出力確率をあらかじめ計算
+        emission_prob_all = self.calc_emission_logprob_all( d )
 
         for t in range(T):
             for k in range(self.MIN_LEN,self.MAX_LEN,self.SKIP_LEN):
@@ -250,7 +282,8 @@ class GPSegmentation():
 
                 segm = d[t-k:t+1]
                 for c in range(self.numclass):
-                    out_prob = self.calc_emission_logprob( c, segm )
+                    #out_prob = self.calc_emission_logprob( c, segm )
+                    out_prob = emission_prob_all[c,k-1,t-k] 
                     foward_prob = 0.0
 
                     # 遷移確率
@@ -262,13 +295,15 @@ class GPSegmentation():
                         #foward_prob = math.log(np.sum( a[tt,:,:] * self.trans_prob[:,c] )) + out_prob
 
 
+                        # 21.12.15:高速化
                         if m[tt]==0:
                             m[tt] = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) 
                         foward_prob = m[tt] + out_prob
+
+                        # 21.12.15:高速化前
                         #foward_prob = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
 
 
-                        #foward_prob = logsumexp( a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
                     else:
                         # 最初の単語
                         foward_prob = out_prob + math.log(self.trans_prob_bos[c])
