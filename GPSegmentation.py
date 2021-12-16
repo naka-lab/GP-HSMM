@@ -38,7 +38,7 @@ class GPSegmentation():
         self.trans_prob_eos = np.ones( nclass )
         self.is_initialized = False
 
-        self.prior_table = [self.AVE_LEN**i * math.exp(-self.AVE_LEN) / math.factorial(i) for i in range(self.MAX_LEN)]
+        self.prior_table = [ i*math.log(self.AVE_LEN) -self.AVE_LEN - sum(np.log(np.arange(1,i+1))) for i in range(1,self.MAX_LEN+1) ]
 
     def load_data(self, filenames, classfile=None ):
         self.data = []
@@ -126,7 +126,8 @@ class GPSegmentation():
         for k in range(1, self.MAX_LEN):
             emission_prob_all[:, k, :] += emission_prob_all[:, k-1, :]
 
-
+        for k in range(self.MAX_LEN):
+            emission_prob_all[:,k,:] += self.prior_table[k]
 
         """
         t = 100
