@@ -9,10 +9,10 @@ import time
 import numpy as np
 import sys
 import os
-#from scipy.misc import logsumexp
+#from scipy.special import logsumexp
 import pyximport
 pyximport.install(setup_args={'include_dirs':[np.get_include()]}, inplace=True)
-from cymath import logsumexp
+from cymath import logsumexp, calc_forward_probability
 from torch.distributions import Normal
 import torch
 
@@ -137,7 +137,7 @@ class GPSegmentation():
         print( emission_prob_all[c,k-1,t-k]  )
         """
 
-        return emission_prob_all
+        return np.array(emission_prob_all, dtype=np.float )
 
 
     def save_model(self, basename ):
@@ -266,6 +266,14 @@ class GPSegmentation():
 
 
     def forward_filtering(self, d ):
+        #### cythonで処理 #######
+        # 全時刻の出力確率をあらかじめ計算
+        emission_prob_all = self.calc_emission_logprob_all( d )
+        forward_prob = calc_forward_probability( emission_prob_all, self.trans_prob, self.trans_prob_bos, self.trans_prob_eos, len(d), self.MIN_LEN, self.SKIP_LEN, self.MAX_LEN, self.numclass )
+        return forward_prob
+
+        """
+        ### Pythonで計算 ########
         T = len(d)
         log_a = np.log( np.zeros( (len(d), self.MAX_LEN, self.numclass) )  + 1.0e-100 )  # 前向き確率．対数で確率を保持．1.0e-100で確率0を近似的に表現．
         #a = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) + 1.0-e100
@@ -281,7 +289,7 @@ class GPSegmentation():
                 if t-k<0:
                     break
 
-                segm = d[t-k:t+1]
+                #segm = d[t-k:t+1]
                 for c in range(self.numclass):
                     #out_prob = self.calc_emission_logprob( c, segm )
                     out_prob = emission_prob_all[c,k-1,t-k] 
@@ -297,7 +305,8 @@ class GPSegmentation():
 
 
                         if m[tt]==0:
-                            m[tt] = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) 
+                            #m[tt] = torch.logsumexp( torch.Tensor(log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c])).flatten(), -1 ) 
+                            m[tt] = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) )
                         foward_prob = m[tt] + out_prob
                         #foward_prob = logsumexp( log_a[tt,:,:] + z[tt] + np.log(self.trans_prob[:,c]) ) + out_prob
 
@@ -323,9 +332,8 @@ class GPSegmentation():
                 log_a[t,:,:] -= z[t]
                 #z[t] = logsumexp( a[t,:,:] )
                 #a[t,:,:] -= z[t]
-
         return np.exp(log_a)*valid
-        #return np.exp(a)*valid
+        """
 
 
     def sample_idx(self, prob ):
