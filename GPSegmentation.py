@@ -13,9 +13,6 @@ import os
 import pyximport
 pyximport.install(setup_args={'include_dirs':[np.get_include()]}, inplace=True)
 from cymath import logsumexp, calc_forward_probability
-from torch.distributions import Normal
-import torch
-
 
 
 class GPSegmentation():
@@ -114,13 +111,14 @@ class GPSegmentation():
     def calc_emission_logprob_all(self, d):
         T = len(d)
         # 出力確率を計算
-        emission_prob_all = torch.zeros( ( self.numclass, self.MAX_LEN, len(d)) )
+        emission_prob_all = np.zeros( ( self.numclass, self.MAX_LEN, len(d)) )
         for c in range(self.numclass):
             params = self.gps[c].predict( range(self.MAX_LEN) )
             for k in range(self.MAX_LEN):
                 for dim in range( self.dim ):
-                    gauss = Normal( params[dim][0][k], params[dim][1][k] )
-                    emission_prob_all[c, k, 0:T-k] += gauss.log_prob( torch.Tensor(d[k:,dim]) )
+                    mu = params[dim][0][k]
+                    sig = params[dim][1][k]
+                    emission_prob_all[c, k, 0:T-k] += -math.log(math.sqrt( 2*math.pi*sig**2)) - (d[k:,dim]-mu)**2 / (2*sig**2)
 
         # 累積確率にする
         for k in range(1, self.MAX_LEN):
@@ -129,15 +127,7 @@ class GPSegmentation():
         for k in range(self.MAX_LEN):
             emission_prob_all[:,k,:] += self.prior_table[k]
 
-        """
-        t = 100
-        k = 5
-        c = 2
-        print( self.gps[c].calc_lik( np.arange( k, dtype=np.float ), d[t-k:t] ))
-        print( emission_prob_all[c,k-1,t-k]  )
-        """
-
-        return np.array(emission_prob_all, dtype=np.float )
+        return emission_prob_all
 
 
     def save_model(self, basename ):
