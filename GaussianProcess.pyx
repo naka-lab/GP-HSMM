@@ -63,24 +63,25 @@ cdef class GP:
         self.param_cache.clear()
 
 
-    def predict( self, x ):
-        mus = []
-        sigmas = []
-        n = len(x)
-        tt = [y - np.random.normal() / self.beta for y in self.yt]
-        for k in range(n):
+    cpdef predict( self, double[:] x ):
+        cdef int k, i
+        cdef double mu, sigma, c
+        cdef int N = x.shape[0]
+        cdef double[:] v
+        cdef double[:] tt = self.yt #[y - np.random.normal() / self.beta for y in self.yt]
+        cdef double[:] mus = np.zeros( N )
+        cdef double[:] sigmas = np.zeros(N)
+
+        for k in range(N):
             v = np.zeros((self.ns))
             for i in range(self.ns):
                 v[i] = self.covariance_func(x[k], self.xt[i])
             c = self.covariance_func(x[k], x[k]) + 1.0 / self.beta
             
-            mu = np.dot(v, np.dot(self.i_cov, tt))
-            sigma = c - np.dot(v, np.dot(self.i_cov, v))
-            
-            mus.append(mu)
-            sigmas.append(sigma)
+            mus[k] = np.dot(v, np.dot(self.i_cov, tt))
+            sigmas[k] = c - np.dot(v, np.dot(self.i_cov, v))
         
-        return np.array(mus), np.array(sigmas)
+        return mus, sigmas
 
     cpdef double calc_lik( self, double[:] xs, double[:] ys ):
         cdef int k,i

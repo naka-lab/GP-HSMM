@@ -51,7 +51,7 @@ class GPMD:
     def predict(self, x ):
         params = []
         for d in range(self.__dim):
-            mus, sigmas = self.__gp[d].predict(x)
+            mus, sigmas = self.__gp[d].predict(np.array(x, dtype=np.float))
             params.append( (mus, sigmas) )
         return params
 
