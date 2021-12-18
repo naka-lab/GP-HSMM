@@ -1,10 +1,12 @@
 # GP-HSMM
 
-ガウス過程と隠れセミマルコフモデルを用いた時系列データの分節化の実装です．
-ガウス過程の計算は，Cythonと計算のキャッシュを利用して高速化しています．
-詳細は以下の論文を参照してください．
+ガウス過程と隠れセミマルコフモデルを用いた時系列データの分節化の実装です．詳細は以下の論文を参照してください．
 
 Tomoaki Nakamura, Takayuki Nagai, Daichi Mochihashi, Ichiro Kobayashi, Hideki Asoh and Masahide Kaneko, “Segmenting Continuous Motions with Hidden Semi-Markov Models and Gaussian Processes”, Frontiers in Neurorobotics, vol.11, article 67, pp. 1-11, Dec. 2017 [[PDF]](https://github.com/naka-lab/GP-HSMM/raw/master/main.pdf)
+
+さらに以下の文献で提案された高速化法を導入，計算のCython化，逆行列演算の工夫により，従来のGP-HSMMに比べ高速な計算が可能です．
+
+川村 美帆，佐々木 雄一，中村 裕一，"GP-HSMM の尤度計算並列化による高速な身体動作の分節化方式"，計測自動制御学会 システムインテグレーション部門講演会，1A4-08，2021
 
 ## 実行方法
 
