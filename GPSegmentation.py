@@ -479,6 +479,7 @@ class GPSegmentation():
 
             self.segments[n] = segm
 
+            start = time.time()
             for i, (s,c) in enumerate(zip( segm, segm_class )):
                 self.segmclass[(n,i)] = c
 
@@ -493,6 +494,7 @@ class GPSegmentation():
 
                 # 遷移確率更新
                 self.calc_trans_prob()
+            print( "parameter update...", time.time()-start, "sec" )
 
         # hyperparameter更新
         #for c in range(self.numclass):

@@ -42,17 +42,19 @@ cdef class GP:
         self.theta3 = 16.0
 
 
-    cpdef learn(self, xt, yt ):
+    cpdef learn(self, double[:] xt, double[:] yt ):
         cdef int i,j
+        cdef double c
         self.xt = np.array( xt )
         self.yt = np.array( yt )
         self.ns = len(xt)
-        # construct covariance
         cdef double[:,:] cov = np.zeros((self.ns, self.ns))
 
         for i in range(self.ns):
-            for j in range(self.ns):
-                cov[i,j] = self.covariance_func(xt[i], xt[j])
+            for j in range(i+1):
+                c = self.covariance_func(xt[i], xt[j])
+                cov[i,j] = c
+                cov[j,i] = c
                 if i==j:
                     cov[i,j] += 1/self.beta
 
