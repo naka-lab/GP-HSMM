@@ -59,7 +59,9 @@ cdef class GP:
                     cov[i,j] += 1/self.beta
 
 
-        self.i_cov = np.linalg.inv(cov)
+        #self.i_cov = np.linalg.inv(cov)
+        # 高速化：方程式 cov * x = e の解は x = i_cov * e = i_cov になることを利用 
+        self.i_cov = np.linalg.solve(cov, np.identity(self.ns))
         self.param = np.dot(self.i_cov, self.yt)
         
         self.param_cache.clear()
