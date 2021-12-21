@@ -171,6 +171,8 @@ class GPSegmentation():
         valid = np.zeros( (len(d), self.MAX_LEN, self.numclass) ) # 計算された有効な値可どうか．計算されていない場所の確率を0にするため．
         z = np.ones( T ) # 正規化定数
         path_kc = -np.ones(  (len(d), self.MAX_LEN, self.numclass, 2), dtype=np.int32 )
+        emission_prob_all = self.calc_emission_logprob_all( d )
+
 
         # 前向き確率計算
         for t in range(T):
@@ -180,7 +182,8 @@ class GPSegmentation():
 
                 segm = d[t-k:t+1]
                 for c in range(self.numclass):
-                    out_prob = self.calc_emission_logprob( c, segm )
+                    #out_prob = self.calc_emission_logprob( c, segm )
+                    out_prob = emission_prob_all[c,k-1,t-k] 
                     foward_prob = 0.0
 
                     # 遷移確率

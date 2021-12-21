@@ -9,4 +9,8 @@ local_data/
 
 learn/
 
+recog/
+
+*.so
+
 *.pyd

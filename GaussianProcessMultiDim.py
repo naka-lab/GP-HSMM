@@ -13,15 +13,21 @@ class GPMD:
         self.__dim = dim
         self.__gp = [ GaussianProcess.GP() for d in range(self.__dim) ]
 
-    def learn(self,x, y ):
+    def learn(self,x, y, same_cov=True ):
         y = np.array(y, dtype=np.float).reshape( (-1,self.__dim) )
         x = np.array(x,dtype=np.float)
+        i_cov = None
 
         for d in range(self.__dim):
+            if not same_cov:
+                i_cov = None
+
             if len(y)!=0:
-                self.__gp[d].learn( x, y[:,d] )
+                i_cov = self.__gp[d].learn( x, y[:,d], i_cov )
             else:
-                self.__gp[d].learn( x, np.array([]) )
+                i_cov = self.__gp[d].learn( x, np.array([]), i_cov )
+
+            
 
 
     def calc_lik(self, x, y ):

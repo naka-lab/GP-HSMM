@@ -42,7 +42,7 @@ cdef class GP:
         self.theta3 = 16.0
 
 
-    cpdef learn(self, double[:] xt, double[:] yt ):
+    cpdef learn(self, double[:] xt, double[:] yt, double[:,:] i_cov=None ):
         cdef int i,j
         cdef double c
         self.xt = np.array( xt )
@@ -50,21 +50,26 @@ cdef class GP:
         self.ns = len(xt)
         cdef double[:,:] cov = np.zeros((self.ns, self.ns))
 
-        for i in range(self.ns):
-            for j in range(i+1):
-                c = self.covariance_func(xt[i], xt[j])
-                cov[i,j] = c
-                cov[j,i] = c
-                if i==j:
-                    cov[i,j] += 1/self.beta
+        if i_cov==None:
+            for i in range(self.ns):
+                for j in range(i+1):
+                    c = self.covariance_func(xt[i], xt[j])
+                    cov[i,j] = c
+                    cov[j,i] = c
+                    if i==j:
+                        cov[i,j] += 1/self.beta
 
 
-        #self.i_cov = np.linalg.inv(cov)
-        # 高速化：方程式 cov * x = e の解は x = i_cov * e = i_cov になることを利用 
-        self.i_cov = np.linalg.solve(cov, np.identity(self.ns))
+            #self.i_cov = np.linalg.inv(cov)
+            # 高速化：方程式 cov * x = e の解は x = i_cov * e = i_cov になることを利用 
+            self.i_cov = np.linalg.solve(cov, np.identity(self.ns))
+        else:
+            self.i_cov = i_cov
         self.param = np.dot(self.i_cov, self.yt)
         
         self.param_cache.clear()
+
+        return self.i_cov
 
 
     cpdef predict( self, double[:] x ):
