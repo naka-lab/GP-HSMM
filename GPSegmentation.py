@@ -102,7 +102,7 @@ class GPSegmentation():
         if len(segm) > 2:
             #plen = self.AVE_LEN**slen * math.exp(-self.AVE_LEN) / math.factorial(slen)
             log_plen = (slen*math.log(self.AVE_LEN) + (-self.AVE_LEN)*math.log(math.e)) - (sum(np.log(np.arange(1,slen+1))))
-            p = gp.calc_lik( np.arange(len(segm), dtype=np.float) , segm )
+            p = gp.calc_lik( np.arange(len(segm), dtype=float) , segm )
             #return p + math.log(plen)
             return p + log_plen
         else:
@@ -163,7 +163,7 @@ class GPSegmentation():
         np.save( basename + "trans_eos.npy" , self.trans_prob_eos )
 
         for c in range(self.numclass):
-            np.save( basename+"class%03d.npy" % c, self.segm_in_class[c] )
+            np.save( basename+"class%03d.npy" % c, np.array(self.segm_in_class[c], dtype=object) )
 
     def calc_vitervi_path(self, d ):
         T = len(d)
@@ -511,6 +511,6 @@ class GPSegmentation():
             for i, s in enumerate(segm):
                 c = self.segmclass[(n,i)]
                 #lik += self.gps[c].calc_lik( np.arange(len(s),dtype=np.float) , np.array(s) )
-                lik += self.gps[c].calc_lik( np.arange(len(s), dtype=np.float) , s )
+                lik += self.gps[c].calc_lik( np.arange(len(s), dtype=float) , s )
 
         return lik
