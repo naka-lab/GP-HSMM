@@ -67,7 +67,7 @@ cpdef calc_forward_probability(double[:,:,:] emission_prob_all, double[:,:] tran
                     if m[tt]==0:
                         for kk in range(MAX_LEN):
                             for cc in range(num_class):
-                                m[tt] = _logsumexp( m[tt], log_a[tt,kk,cc] + log(trans_prob[cc, c]))
+                                m[tt] = _logsumexp( m[tt], log_a[tt,kk,cc] +  z[tt] + log(trans_prob[cc, c]))
                     foward_prob = m[tt] + out_prob
 
                 else:
