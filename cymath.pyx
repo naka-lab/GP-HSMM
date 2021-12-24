@@ -43,10 +43,10 @@ cdef _logsumexp( double a, double b ):
 cpdef calc_forward_probability(double[:,:,:] emission_prob_all, double[:,:] trans_prob, double[:] trans_prob_bos, double[:] trans_prob_eos, int T, int MIN_LEN, int SKIP_LEN, int MAX_LEN, int num_class):
     cdef int t, k, c, tt, kk, cc
     cdef double foward_prob
-    cdef double[:,:,:] log_a = np.log( np.zeros( (T, MAX_LEN, num_class) )  + 1.0e-100 )  # 前向き確率．対数で確率を保持．1.0e-100で確率0を近似的に表現．
+    cdef double[:,:,:] log_a = np.zeros( (T, MAX_LEN, num_class) )  - 99999999999999
     cdef double[:,:,:] valid = np.zeros( (T, MAX_LEN, num_class) ) # 計算された有効な値可どうか．計算されていない場所の確率を0にするため．
     cdef double[:] z = np.ones( T ) # 正規化定数
-    cdef double[:] m = np.zeros( T )  # t-kの計算結果を入れるバッファ
+    cdef double[:,:] m = np.zeros( (T, num_class) )  # t-kの計算結果を入れるバッファ
 
     for t in range(T):
         for k in range(MIN_LEN, MAX_LEN, SKIP_LEN):
@@ -54,7 +54,7 @@ cpdef calc_forward_probability(double[:,:,:] emission_prob_all, double[:,:] tran
                 break
 
             for c in range(num_class):
-                out_prob = emission_prob_all[c,k-1,t-k] 
+                out_prob = emission_prob_all[c,k,t-k] 
                 foward_prob = 0.0
 
                 # 遷移確率
@@ -64,12 +64,13 @@ cpdef calc_forward_probability(double[:,:,:] emission_prob_all, double[:,:] tran
                     #    m[tt] = logsumexp( log_a[tt,:,:] + z[tt] + np.log(trans_prob[:,c]) )
                     #foward_prob = m[tt] + out_prob
 
-                    if m[tt]==0:
+                    if m[tt,c]==0:
+                        s = -999999999999
                         for kk in range(MAX_LEN):
                             for cc in range(num_class):
-                                m[tt] = _logsumexp( m[tt], log_a[tt,kk,cc] +  z[tt] + log(trans_prob[cc, c]))
-                    foward_prob = m[tt] + out_prob
-
+                                s = _logsumexp( s, log_a[tt,kk,cc] +  z[tt] + log(trans_prob[cc, c]))
+                        m[tt,c] = s
+                    foward_prob = m[tt,c] + out_prob
                 else:
                     # 最初の単語
                     foward_prob = out_prob + log(trans_prob_bos[c])
