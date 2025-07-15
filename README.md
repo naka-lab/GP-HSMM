@@ -1,34 +1,51 @@
 # GP-HSMM
 
-ガウス過程と隠れセミマルコフモデルを用いた時系列データの分節化の実装です．詳細は以下の論文を参照してください．
+This is an implementation of time series data segmentation using Gaussian Processes (GP) and Hidden Semi-Markov Models (HSMM). For details, please refer to the following paper:
 
 Tomoaki Nakamura, Takayuki Nagai, Daichi Mochihashi, Ichiro Kobayashi, Hideki Asoh and Masahide Kaneko, “Segmenting Continuous Motions with Hidden Semi-Markov Models and Gaussian Processes”, Frontiers in Neurorobotics, vol.11, article 67, pp. 1-11, Dec. 2017 [[PDF]](https://github.com/naka-lab/GP-HSMM/raw/master/main.pdf)
 
-さらに以下の文献で提案された高速化法を導入，計算のCython化，逆行列演算の工夫により，従来のGP-HSMMに比べ高速な計算が可能です．
+**A fast and scalable implementation called [RFF-GP-HSMM](https://github.com/naka-lab/RFF-GP-HSMM), which solves the slow computation problem of GP-HSMM, is also available.**
 
-川村 美帆，佐々木 雄一，中村 裕一，"GP-HSMM の尤度計算並列化による高速な身体動作の分節化方式"，計測自動制御学会 システムインテグレーション部門講演会，1A4-08，2021
 
-## 実行方法
+## How to Run
 
 ```
 python main.py
 ```
 
-Cythonで書かれたプログラムは実行時に自動的にコンパイルされます．
-WindowsのVisual Studioのコンパイラでエラーが出る場合は，
+Programs written in Cython will be automatically compiled at runtime.
+If you encounter compilation errors with the Visual Studio compiler on Windows, please edit:
 
 ```
-(Pythonのインストールディレクトリ)/Lib/distutils/msvc9compiler.py
+(Python installation directory)/Lib/distutils/msvc9compiler.py
 ```
 
-の`get_build_version()`内の
+Inside the `get_build_version()` function, replace the following line:
 
 ```
 majorVersion = int(s[:-2]) - 6
 ```
 
-を使いたいVisual Studioのバージョンに書き換えてください．
-VS2012の場合は，`majorVersion = 11`となります．
+with the version number of the Visual Studio you wish to use.
+For example, for VS2012, set:
+
+```
+majorVersion = 11
+```
+
+## Output Files
+
+When executed, the following files and directories will be created in the specified folder:
+
+| File Name| Description |
+| ---- | --- |
+| class{c}.npy         | A collection of segments classified into class c                                                              |
+| class{c}\_dim{d}.png | Plot of the d-th dimension of segments classified into class c                                                |
+| segm{n}.txt          | Segmentation result of the n-th sequence. Column 1: segment class, Column 2: flag indicating segment boundary |
+| trans\_bos.npy       | Probability that each class appears at the beginning of a sequence                                            |
+| trans\_eos.npy       | Probability that each class appears at the end of a sequence                                                  |
+| trans.npy            | Transition probabilities of each class appearing after a given class                                          |
+
 
 # LICENSE
 This program is freely available for free non-commercial use. 
